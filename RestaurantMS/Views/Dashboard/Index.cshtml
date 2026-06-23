@@ -1,0 +1,107 @@
+@{
+    ViewBag.Title = "لوحة التحكم";
+    ViewBag.PageTitle = "لوحة التحكم";
+    ViewBag.PageIcon = "fa-tachometer-alt";
+    var stats = ViewBag.Stats;
+    var recentOrders = (IEnumerable<dynamic>)(ViewBag.RecentOrders ?? new List<dynamic>());
+}
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
+    <div class="stat-info">
+      <div class="value">@((decimal)stats.SalesToday).ToString("N0")</div>
+      <div class="label">مبيعات اليوم</div>
+    </div>
+  </div>
+  <div class="stat-card blue">
+    <div class="stat-icon"><i class="fas fa-shopping-bag"></i></div>
+    <div class="stat-info">
+      <div class="value">@stats.OrdersToday</div>
+      <div class="label">طلبات اليوم</div>
+    </div>
+  </div>
+  <div class="stat-card green">
+    <div class="stat-icon"><i class="fas fa-utensils"></i></div>
+    <div class="stat-info">
+      <div class="value">@stats.ActiveItems</div>
+      <div class="label">أصناف متاحة</div>
+    </div>
+  </div>
+  <div class="stat-card red">
+    <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+    <div class="stat-info">
+      <div class="value">@stats.LowStock</div>
+      <div class="label">مخزون منخفض</div>
+    </div>
+  </div>
+  <div class="stat-card purple">
+    <div class="stat-icon"><i class="fas fa-fire"></i></div>
+    <div class="stat-info">
+      <div class="value">@stats.PendingKitchen</div>
+      <div class="label">طلبات المطبخ</div>
+    </div>
+  </div>
+  <div class="stat-card blue">
+    <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
+    <div class="stat-info">
+      <div class="value">@stats.TodayReservations</div>
+      <div class="label">حجوزات اليوم</div>
+    </div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;flex-wrap:wrap;">
+  <div class="card" style="grid-column:1/-1">
+    <div class="card-header"><h2><i class="fas fa-bolt"></i> وصول سريع</h2></div>
+    <div class="card-body" style="display:flex;gap:12px;flex-wrap:wrap;">
+      <a href="/pos" class="btn btn-primary btn-lg"><i class="fas fa-cash-register"></i> نقطة البيع</a>
+      <a href="/menu" class="btn btn-secondary btn-lg"><i class="fas fa-utensils"></i> إدارة القائمة</a>
+      <a href="/kitchen" class="btn btn-lg" style="background:#e74c3c;color:#fff"><i class="fas fa-fire"></i> شاشة المطبخ</a>
+      <a href="/reports" class="btn btn-lg" style="background:#27ae60;color:#fff"><i class="fas fa-chart-bar"></i> التقارير</a>
+      <a href="/reservations" class="btn btn-warning btn-lg"><i class="fas fa-calendar-alt"></i> الحجوزات</a>
+      <a href="/inventory" class="btn btn-lg" style="background:#8e44ad;color:#fff"><i class="fas fa-boxes"></i> المخزون</a>
+    </div>
+  </div>
+
+  <div class="card" style="grid-column:1/-1">
+    <div class="card-header">
+      <h2><i class="fas fa-clock"></i> آخر الطلبات</h2>
+      <a href="/pos/recent_orders" class="btn btn-light btn-sm">عرض الكل</a>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr><th>#</th><th>العميل</th><th>المجموع</th><th>طريقة الدفع</th><th>الكاشير</th><th>الحالة</th><th>الوقت</th></tr>
+        </thead>
+        <tbody>
+          @if (!recentOrders.Any())
+          {
+            <tr><td colspan="7" style="text-align:center;padding:30px;color:#888">لا توجد طلبات اليوم</td></tr>
+          }
+          else
+          {
+            foreach (var o in recentOrders)
+            {
+              <tr>
+                <td><strong>#@o.order_id</strong></td>
+                <td>@o.customer_name</td>
+                <td><strong>@((decimal)o.total_amount).ToString("N2")</strong></td>
+                <td>
+                  @if ((string)o.payment_method == "Cash")
+                  { <span class="badge badge-success">نقدي</span> }
+                  else if ((string)o.payment_method == "Card")
+                  { <span class="badge badge-info">بطاقة</span> }
+                  else
+                  { <span class="badge badge-secondary">@o.payment_method</span> }
+                </td>
+                <td>@o.served_by</td>
+                <td><span class="badge badge-success">مكتمل</span></td>
+                <td style="font-size:12px;color:#888">@(((DateTime?)o.created_at)?.ToString("HH:mm") ?? "")</td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

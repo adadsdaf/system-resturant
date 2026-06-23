@@ -1,0 +1,46 @@
+@{
+    Layout = null;
+    var ko = ViewBag.KitchenOrder;
+    var items = (IEnumerable<dynamic>)(ViewBag.Items ?? new List<dynamic>());
+}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>تذكرة المطبخ</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Cairo',sans-serif;direction:rtl;padding:12px;font-size:14px;max-width:280px;margin:0 auto}
+.header{text-align:center;border-bottom:3px solid #333;padding-bottom:8px;margin-bottom:12px}
+.title{font-size:20px;font-weight:800}
+.order-num{font-size:28px;font-weight:800;color:#e74c3c;text-align:center;margin:8px 0}
+.info{font-size:13px;margin-bottom:8px;border-bottom:2px dashed #333;padding-bottom:8px}
+.item{padding:8px 0;border-bottom:1px dashed #ccc;display:flex;align-items:center;gap:10px}
+.item-qty{font-size:22px;font-weight:800;background:#e74c3c;color:#fff;width:36px;height:36px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.item-name{font-size:15px;font-weight:700}
+.time{text-align:center;font-size:11px;color:#888;margin-top:10px}
+@@media print{button{display:none}body{max-width:100%}}
+</style>
+</head>
+<body>
+<div class="header"><div class="title">🔥 تذكرة المطبخ</div></div>
+<div class="order-num">طلب #@(ko?.order_id)</div>
+<div class="info">
+  <div><strong>طاولة:</strong> @(string.IsNullOrEmpty((string?)ko?.table_number) ? "—" : (string)ko.table_number)</div>
+  <div><strong>العميل:</strong> @(ko?.customer_name ?? "زبون")</div>
+  @if (!string.IsNullOrEmpty((string?)ko?.notes)) { <div><strong>ملاحظات:</strong> @ko.notes</div> }
+</div>
+@foreach (var item in items)
+{
+  <div class="item">
+    <div class="item-qty">@item.quantity</div>
+    <div class="item-name">@item.item_name</div>
+  </div>
+}
+<div class="time">@(((DateTime?)ko?.created_at)?.ToString("HH:mm yyyy/MM/dd") ?? "")</div>
+<div style="margin-top:12px;text-align:center">
+  <button onclick="window.print()" style="padding:8px 20px;background:#e74c3c;color:#fff;border:none;border-radius:6px;cursor:pointer;font-family:'Cairo',sans-serif;font-size:14px;font-weight:700">🖨️ طباعة</button>
+</div>
+</body>
+</html>

@@ -1,0 +1,90 @@
+@{
+    ViewBag.Title = "التقارير";
+    ViewBag.PageTitle = "التقارير والإحصائيات";
+    ViewBag.PageIcon = "fa-chart-bar";
+    var today = DateTime.Today.ToString("yyyy-MM-dd");
+}
+@section ExtraHead {
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+}
+<div class="page-header">
+  <h1><i class="fas fa-chart-bar"></i> التقارير</h1>
+</div>
+
+<div class="card" style="margin-bottom:20px">
+  <div class="card-body" style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+    <div class="form-group" style="margin:0;flex:1;min-width:150px">
+      <label class="form-label">من تاريخ</label>
+      <input type="date" id="dateFrom" class="form-control" value="@today">
+    </div>
+    <div class="form-group" style="margin:0;flex:1;min-width:150px">
+      <label class="form-label">إلى تاريخ</label>
+      <input type="date" id="dateTo" class="form-control" value="@today">
+    </div>
+    <button class="btn btn-primary" onclick="loadReport()"><i class="fas fa-search"></i> عرض التقرير</button>
+  </div>
+</div>
+
+<div id="summaryCards" class="stats-grid" style="display:none">
+  <div class="stat-card"><div class="stat-icon"><i class="fas fa-shopping-bag"></i></div><div class="stat-info"><div class="value" id="totalOrders">0</div><div class="label">إجمالي الطلبات</div></div></div>
+  <div class="stat-card blue"><div class="stat-icon"><i class="fas fa-dollar-sign"></i></div><div class="stat-info"><div class="value" id="totalRevenue">0</div><div class="label">إجمالي الإيرادات</div></div></div>
+  <div class="stat-card green"><div class="stat-icon"><i class="fas fa-calculator"></i></div><div class="stat-info"><div class="value" id="avgOrder">0</div><div class="label">متوسط الطلب</div></div></div>
+  <div class="stat-card red"><div class="stat-icon"><i class="fas fa-percent"></i></div><div class="stat-info"><div class="value" id="totalDiscount">0</div><div class="label">إجمالي الخصم</div></div></div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px" id="chartsRow" style="display:none">
+  <div class="card"><div class="card-header"><h2><i class="fas fa-chart-line"></i> المبيعات اليومية</h2></div><div class="card-body"><canvas id="salesChart" height="220"></canvas></div></div>
+  <div class="card"><div class="card-header"><h2><i class="fas fa-chart-pie"></i> طرق الدفع</h2></div><div class="card-body"><canvas id="paymentChart" height="220"></canvas></div></div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px" id="tablesRow">
+  <div class="card" id="topItemsCard" style="display:none">
+    <div class="card-header"><h2><i class="fas fa-fire"></i> أكثر الأصناف مبيعاً</h2></div>
+    <div class="table-wrap"><table class="data-table" id="topItemsTable"><thead><tr><th>الصنف</th><th>الكمية</th><th>الإيراد</th></tr></thead><tbody></tbody></table></div>
+  </div>
+  <div class="card" id="byCategoryCard" style="display:none">
+    <div class="card-header"><h2><i class="fas fa-tags"></i> مبيعات التصنيفات</h2></div>
+    <div class="table-wrap"><table class="data-table" id="byCategoryTable"><thead><tr><th>التصنيف</th><th>الكمية</th><th>الإيراد</th></tr></thead><tbody></tbody></table></div>
+  </div>
+</div>
+
+@section ExtraScripts {
+<script>
+let salesChart, paymentChart;
+async function loadReport(){
+  const from=document.getElementById('dateFrom').value, to=document.getElementById('dateTo').value;
+  const data=await(await fetch(`/reports/api/summary?date_from=${from}&date_to=${to}`)).json();
+  const s=data.summary;
+  document.getElementById('summaryCards').style.display='';
+  document.getElementById('totalOrders').textContent=s.total_orders||0;
+  document.getElementById('totalRevenue').textContent=parseFloat(s.total_revenue||0).toFixed(2);
+  document.getElementById('avgOrder').textContent=parseFloat(s.avg_order||0).toFixed(2);
+  document.getElementById('totalDiscount').textContent=parseFloat(s.total_discount||0).toFixed(2);
+
+  document.getElementById('chartsRow').style.display='grid';
+  // Sales chart
+  if(salesChart)salesChart.destroy();
+  const ctx1=document.getElementById('salesChart').getContext('2d');
+  salesChart=new Chart(ctx1,{type:'line',data:{
+    labels:(data.by_date||[]).map(d=>d.date),
+    datasets:[{label:'الإيرادات',data:(data.by_date||[]).map(d=>d.revenue),borderColor:'#F7941D',tension:.3,fill:true,backgroundColor:'rgba(247,148,29,.1)'}]
+  },options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+  // Payment chart
+  if(paymentChart)paymentChart.destroy();
+  const ctx2=document.getElementById('paymentChart').getContext('2d');
+  paymentChart=new Chart(ctx2,{type:'doughnut',data:{
+    labels:(data.by_payment||[]).map(p=>p.payment_method),
+    datasets:[{data:(data.by_payment||[]).map(p=>p.revenue),backgroundColor:['#F7941D','#1565C0','#27ae60','#e74c3c']}]
+  },options:{responsive:true}});
+  // Top items
+  document.getElementById('topItemsCard').style.display='';
+  const tbody1=document.getElementById('topItemsTable').querySelector('tbody');
+  tbody1.innerHTML=(data.top_items||[]).map(i=>`<tr><td><strong>${i.item_name}</strong></td><td>${i.qty_sold}</td><td>${parseFloat(i.revenue||0).toFixed(2)}</td></tr>`).join('');
+  // By category
+  document.getElementById('byCategoryCard').style.display='';
+  const tbody2=document.getElementById('byCategoryTable').querySelector('tbody');
+  tbody2.innerHTML=(data.by_category||[]).map(c=>`<tr><td>${c.category_name}</td><td>${c.qty_sold}</td><td>${parseFloat(c.revenue||0).toFixed(2)}</td></tr>`).join('');
+}
+loadReport();
+</script>
+}

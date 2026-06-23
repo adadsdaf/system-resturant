@@ -1,0 +1,88 @@
+@{
+    ViewBag.Title = "الفروع";
+    ViewBag.PageTitle = "إدارة الفروع";
+    ViewBag.PageIcon = "fa-code-branch";
+    var branches = (IEnumerable<dynamic>)(ViewBag.Branches ?? new List<dynamic>());
+}
+<div class="page-header">
+  <h1><i class="fas fa-code-branch"></i> الفروع</h1>
+  <button class="btn btn-primary" onclick="openModal('addBranchModal')"><i class="fas fa-plus"></i> إضافة فرع</button>
+</div>
+<div class="card">
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>الكود</th><th>الاسم العربي</th><th>الاسم الأجنبي</th><th>الهاتف</th><th>الرئيسي</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+      <tbody>
+        @foreach (var b in branches)
+        {
+          bool active = (bool)b.is_active, isMain = (bool)b.is_main;
+          <tr>
+            <td><strong>@b.branch_code</strong></td>
+            <td>@b.arabic_name</td>
+            <td>@b.foreign_name</td>
+            <td dir="ltr">@b.phone</td>
+            <td>@if(isMain){<span class="badge badge-primary">رئيسي</span>}else{<span class="badge badge-secondary">فرعي</span>}</td>
+            <td>@if(active){<span class="badge badge-success">نشط</span>}else{<span class="badge badge-danger">موقوف</span>}</td>
+            <td>
+              <button class="btn btn-light btn-sm" onclick="editBranch(@b.branch_id,'@((string)b.branch_code)','@((string)b.arabic_name)','@((string?)b.foreign_name??"")')"><i class="fas fa-edit"></i></button>
+              @if (!isMain)
+              {
+                <button class="btn btn-danger btn-sm" onclick="deleteBranch(@b.branch_id)"><i class="fas fa-times"></i></button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="modal-overlay" id="addBranchModal">
+  <div class="modal-box">
+    <div class="modal-header"><h3><i class="fas fa-code-branch"></i> إضافة فرع</h3><button class="modal-close" onclick="closeModal('addBranchModal')">×</button></div>
+    <form method="POST" action="/branches/create">
+      <div class="modal-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="form-group"><label class="form-label">كود الفرع *</label><input type="text" name="branch_code" class="form-control" required></div>
+          <div class="form-group"><label class="form-label">الاسم العربي *</label><input type="text" name="arabic_name" class="form-control" required></div>
+        </div>
+        <div class="form-group"><label class="form-label">الاسم الأجنبي</label><input type="text" name="foreign_name" class="form-control"></div>
+        <div class="form-group"><label class="form-label">العنوان</label><input type="text" name="arabic_address" class="form-control"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="form-group"><label class="form-label">الهاتف</label><input type="text" name="phone" class="form-control"></div>
+          <div class="form-group"><label class="form-label">البريد</label><input type="email" name="email" class="form-control"></div>
+        </div>
+      </div>
+      <div class="modal-footer"><button type="button" class="btn btn-light" onclick="closeModal('addBranchModal')">إلغاء</button><button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> حفظ</button></div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-overlay" id="editBranchModal">
+  <div class="modal-box">
+    <div class="modal-header"><h3><i class="fas fa-edit"></i> تعديل الفرع</h3><button class="modal-close" onclick="closeModal('editBranchModal')">×</button></div>
+    <form method="POST" action="/branches/update">
+      <input type="hidden" name="branch_id" id="editBranchId">
+      <div class="modal-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="form-group"><label class="form-label">كود الفرع *</label><input type="text" name="branch_code" id="editBranchCode" class="form-control" required></div>
+          <div class="form-group"><label class="form-label">الاسم العربي *</label><input type="text" name="arabic_name" id="editBranchName" class="form-control" required></div>
+        </div>
+        <div class="form-group"><label class="form-label">الاسم الأجنبي</label><input type="text" name="foreign_name" id="editBranchForeign" class="form-control"></div>
+      </div>
+      <div class="modal-footer"><button type="button" class="btn btn-light" onclick="closeModal('editBranchModal')">إلغاء</button><button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> حفظ</button></div>
+    </form>
+  </div>
+</div>
+@section ExtraScripts {
+<script>
+function editBranch(id,code,name,foreign){
+  document.getElementById('editBranchId').value=id;
+  document.getElementById('editBranchCode').value=code;
+  document.getElementById('editBranchName').value=name;
+  document.getElementById('editBranchForeign').value=foreign;
+  openModal('editBranchModal');
+}
+async function deleteBranch(id){if(!confirm('إيقاف هذا الفرع؟'))return;const r=await apiPost('/branches/delete',{branch_id:id});if(r.success){showToast('تم إيقاف الفرع','success');setTimeout(()=>location.reload(),600);}}
+</script>
+}

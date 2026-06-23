@@ -1,0 +1,19 @@
+{
+  "Version": 1,
+  "Hash": "MJNkLD6mQ1wV9kvqDJPObHHB5Yf9o7UbyE8aYuHxvbY=",
+  "Source": "RestaurantMS",
+  "BasePath": "_content/RestaurantMS",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "RestaurantMS/wwwroot",
+      "Source": "RestaurantMS",
+      "ContentRoot": "/home/runner/workspace/RestaurantMS/wwwroot/",
+      "BasePath": "_content/RestaurantMS",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": []
+}

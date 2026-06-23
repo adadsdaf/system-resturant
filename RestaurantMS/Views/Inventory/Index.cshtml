@@ -1,0 +1,114 @@
+@{
+    ViewBag.Title = "المخزون";
+    ViewBag.PageTitle = "إدارة المخزون";
+    ViewBag.PageIcon = "fa-boxes";
+    var items = (IEnumerable<dynamic>)(ViewBag.Items ?? new List<dynamic>());
+    var suppliers = (IEnumerable<dynamic>)(ViewBag.Suppliers ?? new List<dynamic>());
+}
+<div class="page-header">
+  <h1><i class="fas fa-boxes"></i> المخزون</h1>
+  <div style="display:flex;gap:8px">
+    <a href="/inventory/transactions" class="btn btn-light"><i class="fas fa-history"></i> سجل الحركات</a>
+    <button class="btn btn-primary" onclick="openModal('addIngModal')"><i class="fas fa-plus"></i> إضافة مادة</button>
+  </div>
+</div>
+<div class="card">
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>المادة</th><th>الوحدة</th><th>المخزون الحالي</th><th>الحد الأدنى</th><th>نقطة الإعادة</th><th>الحالة</th><th>المورد</th><th>الإجراءات</th></tr></thead>
+      <tbody>
+        @if (!items.Any())
+        { <tr><td colspan="8" style="text-align:center;padding:40px;color:#888">لا توجد مواد في المخزون</td></tr> }
+        else
+        {
+          foreach (var i in items)
+          {
+            decimal curr = (decimal)i.current_stock, min = (decimal)i.min_stock, rp = (decimal)i.reorder_point;
+            string statusClass = curr <= 0 ? "badge-danger" : curr <= min ? "badge-warning" : curr <= rp ? "badge-primary" : "badge-success";
+            string statusTxt = curr <= 0 ? "نفد" : curr <= min ? "منخفض" : curr <= rp ? "قارب النفاد" : "طبيعي";
+            <tr>
+              <td><strong>@i.ingredient_name</strong></td>
+              <td>@i.unit</td>
+              <td><strong style="color:@(curr<=min?"var(--danger)":"var(--success)")">@curr.ToString("N2")</strong></td>
+              <td>@min.ToString("N2")</td>
+              <td>@rp.ToString("N2")</td>
+              <td><span class="badge @statusClass">@statusTxt</span></td>
+              <td style="font-size:12px;color:#666">@(i.supplier_name ?? "—")</td>
+              <td>
+                <button class="btn btn-success btn-sm" onclick="openStockIn(@i.ingredient_id,'@((string)i.ingredient_name).Replace("'","\\'")')"><i class="fas fa-plus"></i> وارد</button>
+                <button class="btn btn-warning btn-sm" onclick="openStockOut(@i.ingredient_id,'@((string)i.ingredient_name).Replace("'","\\'")')"><i class="fas fa-minus"></i> صادر</button>
+                <button class="btn btn-danger btn-sm" onclick="delIngredient(@i.ingredient_id)"><i class="fas fa-trash"></i></button>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="modal-overlay" id="addIngModal">
+  <div class="modal-box">
+    <div class="modal-header"><h3><i class="fas fa-plus"></i> إضافة مادة</h3><button class="modal-close" onclick="closeModal('addIngModal')">×</button></div>
+    <form method="POST" action="/inventory/add">
+      <div class="modal-body">
+        <div class="form-group"><label class="form-label">اسم المادة *</label><input type="text" name="ingredient_name" class="form-control" required></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="form-group"><label class="form-label">الوحدة</label><input type="text" name="unit" class="form-control" placeholder="كجم، لتر، حبة..."></div>
+          <div class="form-group"><label class="form-label">المخزون الحالي</label><input type="number" name="current_stock" class="form-control" step="0.01" min="0" value="0"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="form-group"><label class="form-label">الحد الأدنى</label><input type="number" name="min_stock" class="form-control" step="0.01" min="0" value="0"></div>
+          <div class="form-group"><label class="form-label">نقطة الإعادة</label><input type="number" name="reorder_point" class="form-control" step="0.01" min="0" value="0"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="form-group"><label class="form-label">التكلفة/وحدة</label><input type="number" name="cost_per_unit" class="form-control" step="0.01" min="0" value="0"></div>
+          <div class="form-group"><label class="form-label">المورد</label>
+            <select name="supplier_id" class="form-control">
+              <option value="">بلا مورد</option>
+              @foreach (var s in suppliers) { <option value="@s.supplier_id">@s.supplier_name</option> }
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer"><button type="button" class="btn btn-light" onclick="closeModal('addIngModal')">إلغاء</button><button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> حفظ</button></div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-overlay" id="stockInModal">
+  <div class="modal-box" style="max-width:400px">
+    <div class="modal-header"><h3><i class="fas fa-plus-circle"></i> إدخال وارد - <span id="stockInName"></span></h3><button class="modal-close" onclick="closeModal('stockInModal')">×</button></div>
+    <form method="POST" action="/inventory/stock_in">
+      <input type="hidden" name="ingredient_id" id="stockInId">
+      <div class="modal-body">
+        <div class="form-group"><label class="form-label">الكمية *</label><input type="number" name="quantity" class="form-control" step="0.01" min="0.01" required></div>
+        <div class="form-group"><label class="form-label">تكلفة الوحدة</label><input type="number" name="unit_cost" class="form-control" step="0.01" min="0" value="0"></div>
+        <div class="form-group"><label class="form-label">رقم المرجع</label><input type="text" name="reference_no" class="form-control"></div>
+        <div class="form-group"><label class="form-label">ملاحظات</label><input type="text" name="notes" class="form-control"></div>
+      </div>
+      <div class="modal-footer"><button type="button" class="btn btn-light" onclick="closeModal('stockInModal')">إلغاء</button><button type="submit" class="btn btn-success"><i class="fas fa-save"></i> تسجيل</button></div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-overlay" id="stockOutModal">
+  <div class="modal-box" style="max-width:400px">
+    <div class="modal-header"><h3><i class="fas fa-minus-circle"></i> إخراج صادر - <span id="stockOutName"></span></h3><button class="modal-close" onclick="closeModal('stockOutModal')">×</button></div>
+    <form method="POST" action="/inventory/stock_out">
+      <input type="hidden" name="ingredient_id" id="stockOutId">
+      <div class="modal-body">
+        <div class="form-group"><label class="form-label">الكمية *</label><input type="number" name="quantity" class="form-control" step="0.01" min="0.01" required></div>
+        <div class="form-group"><label class="form-label">ملاحظات</label><input type="text" name="notes" class="form-control"></div>
+      </div>
+      <div class="modal-footer"><button type="button" class="btn btn-light" onclick="closeModal('stockOutModal')">إلغاء</button><button type="submit" class="btn btn-warning"><i class="fas fa-save"></i> تسجيل</button></div>
+    </form>
+  </div>
+</div>
+@section ExtraScripts {
+<script>
+function openStockIn(id,name){document.getElementById('stockInId').value=id;document.getElementById('stockInName').textContent=name;openModal('stockInModal');}
+function openStockOut(id,name){document.getElementById('stockOutId').value=id;document.getElementById('stockOutName').textContent=name;openModal('stockOutModal');}
+async function delIngredient(id){if(!confirm('حذف هذه المادة؟'))return;const r=await apiPost('/inventory/delete',{ingredient_id:id});if(r.success){showToast('تم الحذف','success');setTimeout(()=>location.reload(),600);}}
+</script>
+}

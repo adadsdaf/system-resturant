@@ -1,0 +1,79 @@
+@{
+    ViewBag.Title = "مردود المبيعات";
+    ViewBag.PageTitle = "مردود المبيعات";
+    ViewBag.PageIcon = "fa-undo-alt";
+    var returns = (IEnumerable<dynamic>)(ViewBag.Returns ?? new List<dynamic>());
+    var invoices = (IEnumerable<dynamic>)(ViewBag.Invoices ?? new List<dynamic>());
+}
+<div class="page-header">
+  <h1><i class="fas fa-undo-alt"></i> مردود المبيعات</h1>
+  <div style="display:flex;gap:8px">
+    <a href="/sales/invoices" class="btn btn-light"><i class="fas fa-file-invoice"></i> الفواتير</a>
+    <button class="btn btn-primary" onclick="openModal('addReturnModal')"><i class="fas fa-plus"></i> إضافة مردود</button>
+  </div>
+</div>
+<div class="card">
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>رقم المردود</th><th>العميل</th><th>الفاتورة</th><th>مبلغ المردود</th><th>السبب</th><th>الحالة</th><th>التاريخ</th><th>إجراءات</th></tr></thead>
+      <tbody>
+        @if (!returns.Any())
+        { <tr><td colspan="8" style="text-align:center;padding:40px;color:#888">لا توجد مردودات</td></tr> }
+        else
+        {
+          foreach (var r in returns)
+          {
+            string status = (string)r.status;
+            <tr>
+              <td><strong>@r.return_number</strong></td>
+              <td>@r.customer_name</td>
+              <td>@(r.invoice_number ?? "—")</td>
+              <td style="color:var(--danger);font-weight:700">@((decimal)r.return_amount).ToString("N2")</td>
+              <td style="font-size:12px;max-width:150px;overflow:hidden;text-overflow:ellipsis">@r.reason</td>
+              <td><span class="badge @(status=="Approved"?"badge-success":status=="Pending"?"badge-warning":"badge-danger")">@(status=="Approved"?"معتمد":status=="Pending"?"قيد المراجعة":"مرفوض")</span></td>
+              <td style="font-size:12px;color:#666">@(((DateTime?)r.created_at)?.ToString("yyyy/MM/dd HH:mm") ?? "")</td>
+              <td>
+                @if (status == "Pending")
+                {
+                  <button class="btn btn-success btn-sm" onclick="approveReturn(@r.return_id)"><i class="fas fa-check"></i></button>
+                  <button class="btn btn-danger btn-sm" onclick="deleteReturn(@r.return_id)"><i class="fas fa-trash"></i></button>
+                }
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="modal-overlay" id="addReturnModal">
+  <div class="modal-box">
+    <div class="modal-header"><h3><i class="fas fa-undo-alt"></i> إضافة مردود</h3><button class="modal-close" onclick="closeModal('addReturnModal')">×</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">الفاتورة</label>
+        <select id="retInvoiceId" class="form-control">
+          <option value="">بلا فاتورة</option>
+          @foreach (var inv in invoices) { <option value="@inv.invoice_id">@inv.invoice_number - @inv.customer_name - @((decimal)inv.total_amount).ToString("N2")</option> }
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">اسم العميل</label><input type="text" id="retCustName" class="form-control"></div>
+      <div class="form-group"><label class="form-label">مبلغ المردود *</label><input type="number" id="retAmount" class="form-control" step="0.01" min="0.01" required></div>
+      <div class="form-group"><label class="form-label">سبب المردود</label><textarea id="retReason" class="form-control" rows="3"></textarea></div>
+    </div>
+    <div class="modal-footer"><button type="button" class="btn btn-light" onclick="closeModal('addReturnModal')">إلغاء</button><button class="btn btn-primary" onclick="submitReturn()"><i class="fas fa-save"></i> حفظ</button></div>
+  </div>
+</div>
+@section ExtraScripts {
+<script>
+async function submitReturn(){
+  const data={InvoiceId:parseInt(document.getElementById('retInvoiceId').value)||null,CustomerName:document.getElementById('retCustName').value,ReturnAmount:parseFloat(document.getElementById('retAmount').value)||0,Reason:document.getElementById('retReason').value};
+  if(!data.ReturnAmount){showToast('أدخل مبلغ المردود','warning');return;}
+  const res=await apiPost('/sales/returns/create',data);
+  if(res.success){showToast('تم إنشاء المردود: '+res.return_number,'success');setTimeout(()=>location.reload(),800);}
+  else showToast(res.error||'خطأ','error');
+}
+async function approveReturn(id){const res=await apiPost('/sales/returns/approve',{return_id:id});if(res.success){showToast('تم اعتماد المردود','success');setTimeout(()=>location.reload(),600);}}
+async function deleteReturn(id){if(!confirm('حذف هذا المردود؟'))return;const res=await apiPost('/sales/returns/delete',{return_id:id});if(res.success){showToast('تم الحذف','success');setTimeout(()=>location.reload(),600);}}
+</script>
+}

@@ -1,0 +1,118 @@
+@{
+    ViewBag.Title = "إدارة التراخيص";
+    ViewBag.PageTitle = "إدارة التراخيص والأجهزة";
+    ViewBag.PageIcon = "fa-shield-alt";
+    var settingsDict = (Dictionary<string,string?>)(ViewBag.Settings ?? new Dictionary<string,string?>());
+    var devices = (IEnumerable<dynamic>)(ViewBag.Devices ?? new List<dynamic>());
+    string S(string k) => settingsDict.ContainsKey(k) ? (settingsDict[k] ?? "") : "";
+}
+<div class="page-header"><h1><i class="fas fa-shield-alt"></i> إدارة التراخيص والأجهزة</h1></div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+  <div class="card">
+    <div class="card-header"><h2><i class="fas fa-certificate"></i> بيانات الترخيص</h2></div>
+    <div class="card-body">
+      <div class="form-group"><label class="form-label">اسم العميل</label><input type="text" id="lic_customer_name" class="form-control" value="@S("customer_name")"></div>
+      <div class="form-group"><label class="form-label">نوع الترخيص</label>
+        <select id="lic_license_type" class="form-control">
+          @foreach (var t in new[]{"Full","Basic","Trial"}) { <option value="@t" @(S("license_type")==t?"selected":"")>@t</option> }
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">تاريخ الانتهاء</label><input type="date" id="lic_expiry_date" class="form-control" value="@S("expiry_date")"></div>
+      <div class="form-group"><label class="form-label">الحد الأقصى للأجهزة</label><input type="number" id="lic_max_devices" class="form-control" value="@S("max_devices")" min="1"></div>
+      <button class="btn btn-primary" onclick="saveLicenseSettings()"><i class="fas fa-save"></i> حفظ الإعدادات</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><h2><i class="fas fa-info-circle"></i> حالة الترخيص</h2></div>
+    <div class="card-body">
+      @{
+        var expDate = S("expiry_date");
+        bool expired = false;
+        if (DateTime.TryParse(expDate, out var exp)) expired = exp < DateTime.Today;
+      }
+      <div style="margin-bottom:12px">
+        <span class="badge @(expired ? "badge-danger" : "badge-success")" style="font-size:14px;padding:6px 16px">
+          @(expired ? "منتهي الصلاحية" : "ساري المفعول")
+        </span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+          <span style="color:#666;font-size:13px">اسم العميل</span><span style="font-weight:700">@S("customer_name")</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+          <span style="color:#666;font-size:13px">نوع الترخيص</span><span style="font-weight:700">@S("license_type")</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+          <span style="color:#666;font-size:13px">تاريخ الانتهاء</span><span style="font-weight:700">@expDate</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0">
+          <span style="color:#666;font-size:13px">الأجهزة المرخصة</span><span style="font-weight:700">@devices.Count() / @S("max_devices")</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2><i class="fas fa-desktop"></i> الأجهزة المرخصة (@devices.Count())</h2>
+    <button class="btn btn-primary" onclick="openModal('addDeviceModal')"><i class="fas fa-plus"></i> إضافة جهاز</button>
+  </div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>اسم الجهاز</th><th>مفتاح الجهاز</th><th>MAC</th><th>آخر ظهور</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+      <tbody>
+        @if (!devices.Any())
+        { <tr><td colspan="6" style="text-align:center;padding:40px;color:#888">لا توجد أجهزة مرخصة</td></tr> }
+        else
+        {
+          foreach (var d in devices)
+          {
+            bool active = (bool)d.is_active;
+            <tr>
+              <td><strong>@d.device_name</strong></td>
+              <td><code style="font-size:11px;background:#f0f2f5;padding:2px 6px;border-radius:4px">@d.device_key</code></td>
+              <td dir="ltr" style="font-size:12px;color:#666">@d.mac_address</td>
+              <td style="font-size:12px;color:#888">@(((DateTime?)d.last_seen)?.ToString("yyyy/MM/dd") ?? "—")</td>
+              <td>@if(active){<span class="badge badge-success">نشط</span>}else{<span class="badge badge-danger">موقوف</span>}</td>
+              <td>
+                <button class="btn btn-sm @(active?"btn-warning":"btn-success")" onclick="toggleDevice(@d.device_id)"><i class="fas fa-toggle-@(active?"off":"on")"></i></button>
+                <button class="btn btn-danger btn-sm" onclick="deleteDevice(@d.device_id)"><i class="fas fa-trash"></i></button>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="modal-overlay" id="addDeviceModal">
+  <div class="modal-box" style="max-width:440px">
+    <div class="modal-header"><h3><i class="fas fa-desktop"></i> إضافة جهاز</h3><button class="modal-close" onclick="closeModal('addDeviceModal')">×</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">اسم الجهاز *</label><input type="text" id="devName" class="form-control" required></div>
+      <div class="form-group"><label class="form-label">MAC Address</label><input type="text" id="devMac" class="form-control" placeholder="اختياري"></div>
+      <div class="form-group"><label class="form-label">ملاحظات</label><input type="text" id="devNotes" class="form-control"></div>
+    </div>
+    <div class="modal-footer"><button type="button" class="btn btn-light" onclick="closeModal('addDeviceModal')">إلغاء</button><button class="btn btn-primary" onclick="addDevice()"><i class="fas fa-save"></i> إضافة</button></div>
+  </div>
+</div>
+@section ExtraScripts {
+<script>
+async function saveLicenseSettings(){
+  const data={customer_name:document.getElementById('lic_customer_name').value,license_type:document.getElementById('lic_license_type').value,expiry_date:document.getElementById('lic_expiry_date').value,max_devices:document.getElementById('lic_max_devices').value};
+  const res=await apiPost('/license/save_settings',data);
+  if(res.success)showToast('تم حفظ إعدادات الترخيص','success');
+}
+async function addDevice(){
+  const name=document.getElementById('devName').value;
+  if(!name){showToast('أدخل اسم الجهاز','warning');return;}
+  const res=await apiPost('/license/add_device',{DeviceName:name,MacAddress:document.getElementById('devMac').value,Notes:document.getElementById('devNotes').value});
+  if(res.success){showToast('تم إضافة الجهاز. المفتاح: '+res.device_key,'success');setTimeout(()=>location.reload(),1500);}
+}
+async function toggleDevice(id){const r=await apiPost('/license/toggle_device',{device_id:id});if(r.success){showToast('تم تغيير الحالة','success');setTimeout(()=>location.reload(),600);}}
+async function deleteDevice(id){if(!confirm('حذف هذا الجهاز؟'))return;const r=await apiPost('/license/delete_device',{device_id:id});if(r.success){showToast('تم الحذف','success');setTimeout(()=>location.reload(),600);}}
+</script>
+}
