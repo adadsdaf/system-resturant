@@ -141,7 +141,7 @@ GO
 -- ===== عناصر الطلبات =====
 IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME='order_items')
 CREATE TABLE order_items (
-    item_id       INT IDENTITY(1,1) PRIMARY KEY,
+    order_item_id   INT IDENTITY(1,1) PRIMARY KEY,
     order_id      INT REFERENCES orders(order_id) ON DELETE CASCADE,
     menu_item_id  INT REFERENCES menu_items(item_id),
     item_name     NVARCHAR(100) NOT NULL,
