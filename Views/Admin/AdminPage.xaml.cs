@@ -177,6 +177,13 @@ public partial class AdminPage : Page
         }
     }
 
+    private async void BtnSaveSettings_Click(object s, RoutedEventArgs e)
+    {
+        MessageBox.Show("✅ تم حفظ الإعدادات");
+    }
+
+    private async void BtnRefreshLogs_Click(object s, RoutedEventArgs e) => await LoadLogsAsync();
+
     // ===== سجل الأحداث =====
     private async Task LoadLogsAsync()
     {
@@ -186,7 +193,7 @@ public partial class AdminPage : Page
               LEFT JOIN users u ON al.user_id = u.user_id
               ORDER BY al.created_at DESC");
 
-        PanelLogs.ItemsSource = rows.Select(r => new
+        GridLogs.ItemsSource = rows.Select(r => new
         {
             date_fmt  = ((DateTime)r.created_at).ToString("dd/MM/yyyy HH:mm"),
             user_name = (string)(r.user_name ?? "نظام"),

@@ -1,8 +1,8 @@
 <Window x:Class="RestaurantMS.Desktop.Views.Suppliers.SupplierDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        FlowDirection="RightToLeft" Background="#0d1117"
-        Title="بيانات المورد" Height="340" Width="400"
+        FlowDirection="RightToLeft" Background="{StaticResource BgBrush}"
+        Title="بيانات المورد" Height="360" Width="420"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
     <Grid Margin="24">
         <Grid.RowDefinitions>
@@ -11,21 +11,26 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <TextBlock x:Name="TxtTitle" Grid.Row="0" Text="إضافة مورد"
-                   Foreground="White" FontSize="18" FontWeight="Bold" Margin="0,0,0,20"/>
+                   Foreground="{StaticResource TextPrimaryBrush}"
+                   FontSize="18" FontWeight="Bold" Margin="0,0,0,20"/>
         <StackPanel Grid.Row="1">
-            <TextBlock Text="اسم الشركة" Foreground="#8b949e" FontSize="13" Margin="0,0,0,4"/>
-            <TextBox x:Name="TxtCompany" Style="{StaticResource DarkInput}" Height="40" Margin="0,0,0,12"/>
-            <TextBlock Text="اسم المسؤول" Foreground="#8b949e" FontSize="13" Margin="0,0,0,4"/>
-            <TextBox x:Name="TxtContact" Style="{StaticResource DarkInput}" Height="40" Margin="0,0,0,12"/>
+            <TextBlock Text="اسم الشركة" Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,0,0,6"/>
+            <TextBox x:Name="TxtCompany" Style="{StaticResource DarkInput}" Height="42" Margin="0,0,0,12"/>
+            <TextBlock Text="اسم المسؤول" Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,0,0,6"/>
+            <TextBox x:Name="TxtContact" Style="{StaticResource DarkInput}" Height="42" Margin="0,0,0,12"/>
             <Grid>
-                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="الهاتف" Foreground="#8b949e" FontSize="13" Margin="0,0,0,4"/>
-                    <TextBox x:Name="TxtPhone" Style="{StaticResource DarkInput}" Height="40"/>
+                    <TextBlock Text="الهاتف" Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,0,0,6"/>
+                    <TextBox x:Name="TxtPhone" Style="{StaticResource DarkInput}" Height="42"/>
                 </StackPanel>
                 <StackPanel Grid.Column="2">
-                    <TextBlock Text="البريد الإلكتروني" Foreground="#8b949e" FontSize="13" Margin="0,0,0,4"/>
-                    <TextBox x:Name="TxtEmail" Style="{StaticResource DarkInput}" Height="40"/>
+                    <TextBlock Text="البريد الإلكتروني" Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,0,0,6"/>
+                    <TextBox x:Name="TxtEmail" Style="{StaticResource DarkInput}" Height="42"/>
                 </StackPanel>
             </Grid>
         </StackPanel>

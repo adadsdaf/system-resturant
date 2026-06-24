@@ -1,8 +1,6 @@
 using Dapper;
 using RestaurantMS.Desktop.Data;
-using Microsoft.Data.SqlClient;
 using RestaurantMS.Desktop.Models;
-using System.Data.Common;
 using System.Windows;
 using System.Windows.Input;
 
@@ -43,11 +41,11 @@ public partial class SetupWindow : Window
     {
         HideError();
 
-        var fullName   = TxtFullName.Text.Trim();
-        var username   = TxtUsername.Text.Trim();
-        var password   = TxtPassword.Password;
-        var confirm    = TxtConfirmPassword.Password;
-        var restName   = TxtRestName.Text.Trim();
+        var fullName = TxtFullName.Text.Trim();
+        var username = TxtUsername.Text.Trim();
+        var password = TxtPassword.Password;
+        var confirm  = TxtConfirmPassword.Password;
+        var restName = TxtRestName.Text.Trim();
 
         if (string.IsNullOrEmpty(fullName) || string.IsNullOrEmpty(username) ||
             string.IsNullOrEmpty(password) || string.IsNullOrEmpty(restName))
@@ -103,7 +101,6 @@ public partial class SetupWindow : Window
 
             try
             {
-
                 await conn.ExecuteAsync(@"
                     IF NOT EXISTS (SELECT 1 FROM roles)
                     INSERT INTO roles (role_name) VALUES
@@ -111,27 +108,33 @@ public partial class SetupWindow : Window
                     transaction: tx);
 
                 await conn.ExecuteAsync(@"
+                    IF NOT EXISTS (SELECT 1 FROM branches WHERE arabic_name = @rn)
                     INSERT INTO branches (arabic_name, address, phone, is_active)
                     VALUES (@rn, N'الفرع الرئيسي', N'0500000000', 1);",
                     new { rn = restName }, transaction: tx);
 
                 var branchId = await conn.ExecuteScalarAsync<int>(
-                    "SELECT TOP 1 branch_id FROM branches ORDER BY branch_id DESC", transaction: tx);
+                    "SELECT TOP 1 branch_id FROM branches ORDER BY branch_id DESC",
+                    transaction: tx);
 
                 var roleId = await conn.ExecuteScalarAsync<int>(
-                    "SELECT role_id FROM roles WHERE role_name = N'Owner'", transaction: tx);
+                    "SELECT role_id FROM roles WHERE role_name = N'Owner'",
+                    transaction: tx);
 
                 await conn.ExecuteAsync(@"
-                    INSERT INTO users (full_name, username, password_hash, email, role_id, branch_id, is_active)
-                    VALUES (@fn, @un, @ph, @em, @rid, @bid, 1);",
-                    new { fn = fullName, un = username, ph = hashedPassword, em = $"{username}@restaurant.com", rid = roleId, bid = branchId },
+                    INSERT INTO users (full_name, username, password_hash, role_id, branch_id, is_active)
+                    VALUES (@fn, @un, @ph, @rid, @bid, 1);",
+                    new { fn = fullName, un = username, ph = hashedPassword, rid = roleId, bid = branchId },
                     transaction: tx);
 
                 var userId = await conn.ExecuteScalarAsync<int>(
-                    "SELECT TOP 1 user_id FROM users ORDER BY user_id DESC", transaction: tx);
+                    "SELECT TOP 1 user_id FROM users ORDER BY user_id DESC",
+                    transaction: tx);
 
-                await conn.ExecuteAsync(
-                    "INSERT INTO settings (setting_key, value, description) VALUES (@k, @v, @d);",
+                await conn.ExecuteAsync(@"
+                    IF NOT EXISTS (SELECT 1 FROM settings WHERE setting_key='restaurant_name')
+                    INSERT INTO settings (setting_key, value, description) VALUES (@k, @v, @d);
+                    ELSE UPDATE settings SET value=@v WHERE setting_key=@k;",
                     new { k = "restaurant_name", v = restName, d = "اسم المطعم" }, transaction: tx);
 
                 tx.Commit();
@@ -177,6 +180,6 @@ public partial class SetupWindow : Window
     private void SetLoading(bool loading)
     {
         BtnCreateAdmin.IsEnabled = !loading;
-        TxtBtnLabel.Text  = loading ? "جارٍ الإنشاء..." : "إنشاء حساب المدير";
+        TxtBtnLabel.Text = loading ? "جارٍ الإنشاء..." : "إنشاء حساب المدير";
     }
 }

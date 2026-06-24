@@ -32,7 +32,7 @@ public partial class InventoryPage : Page
             status_txt = ((int)i.is_low == 1) ? "⚠️ منخفض" : "✅ كافٍ"
         }).ToList();
 
-        GridItems.ItemsSource = list;
+        GridInventory.ItemsSource = list;
 
         var lowCount = list.Count(x => (int)x.is_low == 1);
         if (lowCount > 0)

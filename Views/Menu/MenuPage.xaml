@@ -1,7 +1,8 @@
 <Page x:Class="RestaurantMS.Desktop.Views.Menu.MenuPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      FlowDirection="RightToLeft" Background="#0d1117">
+      FlowDirection="RightToLeft"
+      Background="{StaticResource BgBrush}">
     <Grid Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -28,15 +29,12 @@
                             <StackPanel Orientation="Horizontal">
                                 <Button Content="تعديل"  Tag="{Binding}"
                                         Style="{StaticResource GhostButton}"
-                                        Margin="0,0,6,0" FontSize="12"
+                                        Height="28" FontSize="12" Margin="2"
                                         Click="BtnEdit_Click"/>
-                                <Button Content="تفعيل/إيقاف" Tag="{Binding item_id}"
-                                        Style="{StaticResource GhostButton}"
-                                        Margin="0,0,6,0" FontSize="12"
-                                        Click="BtnToggle_Click"/>
-                                <Button Content="حذف" Tag="{Binding item_id}"
+                                <Button Content="حذف"    Tag="{Binding}"
                                         Style="{StaticResource DangerButton}"
-                                        FontSize="12" Click="BtnDelete_Click"/>
+                                        Height="28" FontSize="12" Margin="2"
+                                        Click="BtnDelete_Click"/>
                             </StackPanel>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>

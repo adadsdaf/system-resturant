@@ -1,7 +1,8 @@
 <Page x:Class="RestaurantMS.Desktop.Views.Admin.AdminPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      FlowDirection="RightToLeft" Background="{StaticResource BgColor}">
+      FlowDirection="RightToLeft"
+      Background="{StaticResource BgBrush}">
     <Grid Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -92,21 +93,28 @@
                 </Grid>
 
                 <!-- إعدادات -->
-                <ScrollViewer x:Name="PanelSettings" Visibility="Collapsed"
-                              VerticalScrollBarVisibility="Auto">
-                    <StackPanel x:Name="SettingsPanel" MaxWidth="480"/>
+                <ScrollViewer x:Name="PanelSettings" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+                    <StackPanel x:Name="SettingsPanel" Margin="0,0,0,16" MaxWidth="560"/>
                 </ScrollViewer>
 
                 <!-- سجل الأحداث -->
-                <DataGrid x:Name="PanelLogs" Visibility="Collapsed"
-                          Style="{StaticResource DataGridStyle}">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="التاريخ"  Binding="{Binding date_fmt}"  Width="140"/>
-                        <DataGridTextColumn Header="المستخدم" Binding="{Binding user_name}" Width="130"/>
-                        <DataGridTextColumn Header="الحدث"    Binding="{Binding action}"    Width="*"/>
-                        <DataGridTextColumn Header="التفاصيل" Binding="{Binding details}"   Width="200"/>
-                    </DataGrid.Columns>
-                </DataGrid>
+                <Grid x:Name="PanelLogs" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
+                        <Button Content="🔄 تحديث" Style="{StaticResource GhostButton}" Click="BtnRefreshLogs_Click"/>
+                    </StackPanel>
+                    <DataGrid Grid.Row="1" x:Name="GridLogs" Style="{StaticResource DataGridStyle}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="الوقت"      Binding="{Binding date_fmt}"  Width="160"/>
+                            <DataGridTextColumn Header="المستخدم"   Binding="{Binding user_name}" Width="130"/>
+                            <DataGridTextColumn Header="الإجراء"    Binding="{Binding action}"    Width="*"/>
+                            <DataGridTextColumn Header="التفاصيل"   Binding="{Binding details}"   Width="200"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
             </Grid>
         </Border>
     </Grid>

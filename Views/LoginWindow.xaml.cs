@@ -1,5 +1,6 @@
 using RestaurantMS.Desktop.Data;
 using RestaurantMS.Desktop.Models;
+using RestaurantMS.Desktop.Views.Owner;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -40,7 +41,7 @@ public partial class LoginWindow : Window
         => UserFieldBorder.BorderBrush = new SolidColorBrush(Color.FromRgb(0xF7, 0x94, 0x1D));
 
     private void TxtUsername_LostFocus(object sender, RoutedEventArgs e)
-        => UserFieldBorder.BorderBrush = new SolidColorBrush(Color.FromRgb(0x30, 0x36, 0x3d));
+        => UserFieldBorder.BorderBrush = new SolidColorBrush(Color.FromRgb(0xE2, 0xE8, 0xF0));
 
     private void TxtPassword_Changed(object sender, RoutedEventArgs e)
         => PassPlaceholder.Visibility = string.IsNullOrEmpty(TxtPassword.Password)
@@ -50,7 +51,7 @@ public partial class LoginWindow : Window
         => PassFieldBorder.BorderBrush = new SolidColorBrush(Color.FromRgb(0xF7, 0x94, 0x1D));
 
     private void TxtPassword_LostFocus(object sender, RoutedEventArgs e)
-        => PassFieldBorder.BorderBrush = new SolidColorBrush(Color.FromRgb(0x30, 0x36, 0x3d));
+        => PassFieldBorder.BorderBrush = new SolidColorBrush(Color.FromRgb(0xE2, 0xE8, 0xF0));
 
     private void Input_KeyDown(object sender, KeyEventArgs e)
     {
@@ -125,6 +126,13 @@ public partial class LoginWindow : Window
         }
     }
 
+    private void BtnOwnerPortal_Click(object sender, RoutedEventArgs e)
+    {
+        var portal = new OwnerPortalWindow(isFirstRun: false);
+        portal.Show();
+        Close();
+    }
+
     private void ShowError(string msg)
     {
         LblError.Text = msg;
@@ -135,7 +143,7 @@ public partial class LoginWindow : Window
 
     private void SetLoading(bool loading)
     {
-        BtnLogin.IsEnabled  = !loading;
-        TxtLoginLabel.Text  = loading ? "جارٍ التحقق..." : "تسجيل الدخول";
+        BtnLogin.IsEnabled = !loading;
+        TxtLoginLabel.Text = loading ? "جارٍ التحقق..." : "تسجيل الدخول";
     }
 }

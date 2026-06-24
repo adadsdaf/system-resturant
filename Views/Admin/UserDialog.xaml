@@ -1,50 +1,69 @@
 <Window x:Class="RestaurantMS.Desktop.Views.Admin.UserDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        FlowDirection="RightToLeft" Background="#0d1117"
-        Title="بيانات المستخدم" Height="400" Width="420"
+        FlowDirection="RightToLeft"
+        Background="{StaticResource BgBrush}"
+        Title="بيانات المستخدم" Height="420" Width="440"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
-    <Grid Margin="24">
+    <Grid Margin="28">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <TextBlock x:Name="TxtTitle" Grid.Row="0" Text="إضافة مستخدم"
-                   Foreground="White" FontSize="18" FontWeight="Bold" Margin="0,0,0,20"/>
+                   Foreground="{StaticResource TextPrimaryBrush}"
+                   FontSize="18" FontWeight="Bold" Margin="0,0,0,20"/>
         <StackPanel Grid.Row="1">
             <Grid Margin="0,0,0,12">
-                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="الاسم الكامل" Foreground="#8b949e" FontSize="13" Margin="0,0,0,4"/>
-                    <TextBox x:Name="TxtFullName" Style="{StaticResource DarkInput}" Height="40"/>
+                    <TextBlock Text="الاسم الكامل" Foreground="{StaticResource MutedBrush}"
+                               FontSize="12" Margin="0,0,0,6"/>
+                    <TextBox x:Name="TxtFullName" Style="{StaticResource DarkInput}" Height="42"/>
                 </StackPanel>
                 <StackPanel Grid.Column="2">
-                    <TextBlock Text="اسم المستخدم" Foreground="#8b949e" FontSize="13" Margin="0,0,0,4"/>
-                    <TextBox x:Name="TxtUsername" Style="{StaticResource DarkInput}" Height="40"/>
+                    <TextBlock Text="اسم المستخدم" Foreground="{StaticResource MutedBrush}"
+                               FontSize="12" Margin="0,0,0,6"/>
+                    <TextBox x:Name="TxtUsername" Style="{StaticResource DarkInput}" Height="42"/>
                 </StackPanel>
             </Grid>
-            <TextBlock Text="كلمة المرور" Foreground="#8b949e" FontSize="13" Margin="0,0,0,4"/>
-            <PasswordBox x:Name="TxtPassword" Background="#21262d" Foreground="White"
-                         BorderBrush="#30363d" BorderThickness="1" Height="40"
-                         Padding="10,8" Margin="0,0,0,12"/>
+            <TextBlock Text="كلمة المرور" Foreground="{StaticResource MutedBrush}"
+                       FontSize="12" Margin="0,0,0,6"/>
+            <PasswordBox x:Name="TxtPassword"
+                         Background="{StaticResource InputBgBrush}"
+                         Foreground="{StaticResource TextPrimaryBrush}"
+                         BorderBrush="{StaticResource BorderBrush2}" BorderThickness="1"
+                         Height="42" Padding="10,8" Margin="0,0,0,12"/>
             <Grid Margin="0,0,0,12">
-                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="الدور" Foreground="#8b949e" FontSize="13" Margin="0,0,0,4"/>
-                    <ComboBox x:Name="CmbRole" Style="{StaticResource DarkCombo}" Height="40"
+                    <TextBlock Text="الدور" Foreground="{StaticResource MutedBrush}"
+                               FontSize="12" Margin="0,0,0,6"/>
+                    <ComboBox x:Name="CmbRole" Style="{StaticResource DarkCombo}" Height="42"
                               DisplayMemberPath="role_name" SelectedValuePath="role_id"/>
                 </StackPanel>
                 <StackPanel Grid.Column="2">
-                    <TextBlock Text="الفرع" Foreground="#8b949e" FontSize="13" Margin="0,0,0,4"/>
-                    <ComboBox x:Name="CmbBranch" Style="{StaticResource DarkCombo}" Height="40"
+                    <TextBlock Text="الفرع" Foreground="{StaticResource MutedBrush}"
+                               FontSize="12" Margin="0,0,0,6"/>
+                    <ComboBox x:Name="CmbBranch" Style="{StaticResource DarkCombo}" Height="42"
                               DisplayMemberPath="arabic_name" SelectedValuePath="branch_id"/>
                 </StackPanel>
             </Grid>
         </StackPanel>
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,20,0,0">
-            <Button Content="حفظ" Style="{StaticResource PrimaryButton}" Width="100" Click="BtnSave_Click" Margin="0,0,8,0"/>
-            <Button Content="إلغاء" Style="{StaticResource GhostButton}" Width="80" Click="BtnCancel_Click"/>
+            <Button Content="حفظ" Style="{StaticResource PrimaryButton}"
+                    Width="100" Click="BtnSave_Click" Margin="0,0,8,0"/>
+            <Button Content="إلغاء" Style="{StaticResource GhostButton}"
+                    Width="80" Click="BtnCancel_Click"/>
         </StackPanel>
     </Grid>
 </Window>

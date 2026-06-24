@@ -39,8 +39,8 @@ public partial class CustomerSearchDialog : Window
 
     private void LstResults_Changed(object s, SelectionChangedEventArgs e)
     {
-        if (LstResults.SelectedItem is dynamic sel)
-            SelectedCustomer = sel;
+        if (LstResults.SelectedItem is not null)
+            SelectedCustomer = LstResults.SelectedItem;
     }
 
     private void BtnSelect_Click(object s, RoutedEventArgs e)

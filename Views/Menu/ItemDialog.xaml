@@ -1,8 +1,8 @@
 <Window x:Class="RestaurantMS.Desktop.Views.Menu.ItemDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        FlowDirection="RightToLeft" Background="#0d1117"
-        Title="صنف القائمة" Height="380" Width="440"
+        FlowDirection="RightToLeft" Background="{StaticResource BgBrush}"
+        Title="صنف القائمة" Height="400" Width="440"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
     <Grid Margin="24">
         <Grid.RowDefinitions>
@@ -11,15 +11,15 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <TextBlock x:Name="TxtTitle" Grid.Row="0" Text="إضافة صنف جديد"
-                   Foreground="White" FontSize="18" FontWeight="Bold" Margin="0,0,0,20"/>
+                   Foreground="{StaticResource TextPrimaryBrush}"
+                   FontSize="18" FontWeight="Bold" Margin="0,0,0,20"/>
         <StackPanel Grid.Row="1">
-            <TextBlock Text="التصنيف" Foreground="#8b949e" FontSize="13" Margin="0,0,0,4"/>
+            <TextBlock Text="التصنيف" Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,0,0,6"/>
             <ComboBox x:Name="CmbCategory" Style="{StaticResource DarkCombo}"
-                      Height="40" Margin="0,0,0,12" DisplayMemberPath="category_name"
-                      SelectedValuePath="category_id"/>
-            <TextBlock Text="اسم الصنف" Foreground="#8b949e" FontSize="13" Margin="0,0,0,4"/>
-            <TextBox  x:Name="TxtName" Style="{StaticResource DarkInput}"
-                      Height="40" Margin="0,0,0,12"/>
+                      Height="42" Margin="0,0,0,12"
+                      DisplayMemberPath="category_name" SelectedValuePath="category_id"/>
+            <TextBlock Text="اسم الصنف" Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,0,0,6"/>
+            <TextBox x:Name="TxtName" Style="{StaticResource DarkInput}" Height="42" Margin="0,0,0,12"/>
             <Grid Margin="0,0,0,12">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -27,15 +27,15 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="سعر البيع" Foreground="#8b949e" FontSize="13" Margin="0,0,0,4"/>
-                    <TextBox x:Name="TxtPrice" Style="{StaticResource DarkInput}" Height="40" Text="0"/>
+                    <TextBlock Text="سعر البيع" Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,0,0,6"/>
+                    <TextBox x:Name="TxtPrice" Style="{StaticResource DarkInput}" Height="42" Text="0"/>
                 </StackPanel>
                 <StackPanel Grid.Column="2">
-                    <TextBlock Text="سعر التكلفة" Foreground="#8b949e" FontSize="13" Margin="0,0,0,4"/>
-                    <TextBox x:Name="TxtCost" Style="{StaticResource DarkInput}" Height="40" Text="0"/>
+                    <TextBlock Text="سعر التكلفة" Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,0,0,6"/>
+                    <TextBox x:Name="TxtCost" Style="{StaticResource DarkInput}" Height="42" Text="0"/>
                 </StackPanel>
             </Grid>
-            <TextBlock Text="الوصف (اختياري)" Foreground="#8b949e" FontSize="13" Margin="0,0,0,4"/>
+            <TextBlock Text="الوصف (اختياري)" Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,0,0,6"/>
             <TextBox x:Name="TxtDesc" Style="{StaticResource DarkInput}" Height="60" TextWrapping="Wrap"/>
         </StackPanel>
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,20,0,0">

@@ -1,19 +1,19 @@
 # دليل إعداد وتشغيل نظام إدارة المطاعم
 ## RestaurantMS Desktop — itQAN Soft
-### إصدار 1.0 | .NET 8 WPF + SQL Server Express
+### إصدار 2.0 | .NET 7 WPF + SQL Server Express | ثيم أبيض/فاتح
 
 ---
 
 ## 📋 المتطلبات الأساسية قبل البدء
 
-قبل فتح المشروع يجب أن يكون مثبتاً على جهازك:
-
 | المطلب | الإصدار | رابط التنزيل |
 |--------|---------|-------------|
 | Visual Studio 2022 | 17.8 أو أحدث | https://visualstudio.microsoft.com |
-| .NET 8 SDK | 8.0 أو أحدث | https://dotnet.microsoft.com/download |
+| .NET 7 SDK | 7.0 أو أحدث | https://dotnet.microsoft.com/download/dotnet/7.0 |
 | SQL Server Express | 2019 أو 2022 | https://www.microsoft.com/sql-server |
 | SSMS (اختياري) | أي إصدار | https://aka.ms/ssmsfullsetup |
+
+> **ملاحظة:** يتطلب المشروع **.NET 7 SDK** وليس .NET 8.
 
 ---
 
@@ -24,7 +24,7 @@
 1. افتح **SQL Server Management Studio (SSMS)**
 2. اتصل بـ: `.\SQLEXPRESS` أو `localhost\SQLEXPRESS`
 3. من القائمة: **File → Open → File**
-4. اختر الملف: `RestaurantMS.Desktop\Database\setup_sqlserver.sql`
+4. اختر الملف: `Database\setup_sqlserver.sql`
 5. اضغط **Execute** أو `F5`
 6. انتظر حتى ترى الرسالة:
    ```
@@ -34,7 +34,7 @@
 ### الطريقة 2: باستخدام سطر الأوامر (CMD)
 
 ```cmd
-sqlcmd -S .\SQLEXPRESS -i "RestaurantMS.Desktop\Database\setup_sqlserver.sql"
+sqlcmd -S .\SQLEXPRESS -i "Database\setup_sqlserver.sql"
 ```
 
 ### الطريقة 3: من داخل Visual Studio
@@ -47,44 +47,9 @@ sqlcmd -S .\SQLEXPRESS -i "RestaurantMS.Desktop\Database\setup_sqlserver.sql"
 
 ---
 
-## 💻 الخطوة الثانية: فتح المشروع في Visual Studio 2022
+## ⚙️ الخطوة الثانية: ضبط إعدادات الاتصال
 
-### خطوات الفتح:
-
-1. افتح **Visual Studio 2022**
-2. اختر **Open a project or solution**
-3. تصفح إلى مجلد:
-   ```
-   RestaurantMS.Desktop\RestaurantMS.Desktop.csproj
-   ```
-4. اختر الملف `.csproj` واضغط **Open**
-
-### تثبيت حزم NuGet:
-
-بعد فتح المشروع، سيقوم Visual Studio بتنزيل الحزم تلقائياً. إذا لم يحدث:
-- افتح: **Tools → NuGet Package Manager → Manage NuGet Packages for Solution**
-- اضغط **Restore**
-
-أو عبر Package Manager Console:
-```powershell
-dotnet restore
-```
-
-### الحزم المستخدمة (تُثبّت تلقائياً):
-
-| الحزمة | الإصدار | الغرض |
-|--------|---------|-------|
-| Dapper | 2.1.35 | ORM خفيف لـ SQL |
-| Microsoft.Data.SqlClient | 5.2.1 | الاتصال بـ SQL Server |
-| BCrypt.Net-Next | 4.0.3 | تشفير كلمات المرور |
-| MaterialDesignThemes | 5.1.0 | واجهة Material Design |
-| Microsoft.Extensions.Configuration | 8.0.0 | قراءة الإعدادات |
-
----
-
-## ⚙️ الخطوة الثالثة: ضبط إعدادات الاتصال
-
-افتح ملف `appsettings.json` في جذر المشروع:
+افتح ملف `appsettings.json` في جذر المشروع وتأكد من صحة الاتصال:
 
 ```json
 {
@@ -103,7 +68,7 @@ dotnet restore
 | SQL Server على منفذ محدد | `Server=localhost,1433` |
 | SQL Server على جهاز آخر | `Server=192.168.1.x\SQLEXPRESS` |
 
-### إذا كنت تستخدم SQL Authentication (مستخدم وكلمة مرور):
+### إذا كنت تستخدم SQL Authentication:
 
 ```json
 "DefaultConnection": "Server=.\\SQLEXPRESS;Database=RestaurantMS;User Id=sa;Password=YourPassword;TrustServerCertificate=True"
@@ -111,82 +76,95 @@ dotnet restore
 
 ---
 
+## 💻 الخطوة الثالثة: فتح المشروع وبناؤه
+
+### فتح المشروع في Visual Studio 2022:
+
+1. افتح **Visual Studio 2022**
+2. اختر **Open a project or solution**
+3. اختر الملف: `RestaurantMS.Desktop.csproj`
+4. انتظر حتى يكتمل تحميل الحزم
+
+### تثبيت حزم NuGet (تلقائي):
+
+Visual Studio يُنزّل الحزم تلقائياً. إذا لم يحدث:
+
+```powershell
+dotnet restore
+```
+
+### الحزم المستخدمة:
+
+| الحزمة | الإصدار | الغرض |
+|--------|---------|-------|
+| Dapper | 2.1.35 | ORM خفيف لـ SQL |
+| Microsoft.Data.SqlClient | 5.2.1 | الاتصال بـ SQL Server |
+| BCrypt.Net-Next | 4.0.3 | تشفير كلمات المرور |
+| MaterialDesignThemes | 5.1.0 | واجهة Material Design |
+| Microsoft.Extensions.Configuration | 7.0.0 | قراءة الإعدادات |
+
+### البناء عبر سطر الأوامر:
+
+```cmd
+dotnet build
+```
+
+### إنتاج ملف EXE قابل للتوزيع (Windows):
+
+```cmd
+dotnet publish -r win-x64 --self-contained -c Release -o .\publish
+```
+
+الملف التنفيذي سيكون في مجلد `publish\`.
+
+---
+
 ## ▶️ الخطوة الرابعة: تشغيل التطبيق
 
 1. اضغط **F5** لتشغيل مع Debugging
 2. أو اضغط **Ctrl+F5** لتشغيل بدون Debugging (أسرع)
-3. أو اضغط على زر ▶️ في شريط الأدوات
-
-### بيانات الدخول الافتراضية:
-
-| المستخدم | كلمة المرور | الصلاحيات |
-|----------|------------|----------|
-| `admin`  | `admin123` | مدير - جميع الصفحات |
-| `owner`  | `owner2025`| مالك - كامل الصلاحيات |
-| `cashier1` | `admin123` | كاشير - نقطة البيع والمطبخ |
 
 ---
 
-## 🚨 حل المشاكل الشائعة
+## 🚀 أول تشغيل — بوابة المالك
 
-### ❌ خطأ: "A network-related or instance-specific error"
+عند تشغيل التطبيق **لأول مرة**، تفتح تلقائياً **بوابة مالك النظام** لإعداد:
 
-**السبب:** SQL Server Express غير مشغّل أو اسم الـ instance خاطئ.
+1. **بيانات دخول المالك** — اسم المستخدم وكلمة المرور (تُحفظ مشفّرة في AppData)
+2. **إعدادات المطعم** — الاسم والبيانات الأساسية
+3. **إنشاء التراخيص** — توليد مفاتيح ترخيص للأجهزة
 
-**الحل:**
-1. افتح **Services** (اضغط `Win+R` واكتب `services.msc`)
-2. ابحث عن **SQL Server (SQLEXPRESS)**
-3. تأكد أنه **Running**
-4. إذا كان موقوفاً، انقر عليه بالزر الأيمن → **Start**
+بعد الإعداد، يُطلب تفعيل **ترخيص الجهاز** قبل الدخول للنظام.
 
-أو عبر CMD كـ Administrator:
-```cmd
-net start MSSQL$SQLEXPRESS
-```
+### الدخول للبوابة لاحقاً:
 
-### ❌ خطأ: "Login failed for user"
+من شاشة تسجيل الدخول اضغط زر **"⚙ بوابة مالك النظام"** وأدخل بيانات المالك.
 
-**السبب:** الـ Integrated Security غير مفعّل.
+### بيانات الدخول الافتراضية (بعد تشغيل سكريبت قاعدة البيانات):
 
-**الحل:**
-1. افتح SSMS
-2. انقر بالزر الأيمن على السيرفر → **Properties**
-3. اختر **Security**
-4. فعّل **SQL Server and Windows Authentication mode**
-5. أعد تشغيل SQL Server Service
+| المستخدم | كلمة المرور | الصلاحيات |
+|----------|------------|----------|
+| `admin`  | `admin123` | مدير — جميع الصفحات |
+| `cashier1` | `admin123` | كاشير — نقطة البيع والمطبخ |
 
-### ❌ خطأ: "Cannot find 'RestaurantMS' database"
+---
 
-**السبب:** لم يُنفَّذ سكريبت قاعدة البيانات.
+## 🎨 الثيم البصري (الإصدار 2.0)
 
-**الحل:** عُد إلى الخطوة الأولى ونفِّذ `setup_sqlserver.sql`
+تم التحويل إلى **ثيم أبيض/فاتح** احترافي:
 
-### ❌ خطأ: "NuGet packages not restored"
-
-**الحل:**
-```powershell
-# في Package Manager Console
-Update-Package -reinstall
-
-# أو عبر CMD في مجلد المشروع
-dotnet restore
-```
-
-### ❌ خطأ: "The type or namespace 'BCrypt' could not be found"
-
-**الحل:**
-- انقر بالزر الأيمن على المشروع → **Manage NuGet Packages**
-- ابحث عن `BCrypt.Net-Next`
-- ثبِّت الإصدار `4.0.3`
-
-### ❌ خطأ: "PresentationFramework not found" أو أخطاء WPF
-
-**السبب:** SDK المثبّت لا يدعم Windows.
-
-**الحل:**
-1. افتح **Visual Studio Installer**
-2. عدِّل Visual Studio 2022
-3. تأكد من تثبيت Workload: **.NET desktop development**
+| العنصر | القيمة |
+|--------|-------|
+| الخلفية العامة | `#F4F7FC` |
+| البطاقات | `#FFFFFF` (أبيض) |
+| شريط التنقل | `#1A2332` (أزرق داكن) |
+| النص الرئيسي | `#1E293B` |
+| النص الثانوي (Muted) | `#64748B` |
+| الحدود | `#E2E8F0` |
+| اللون المميز (Accent) | `#F7941D` (برتقالي itQAN) |
+| اللون الأزرق | `#1B4E9E` |
+| النجاح | `#22C55E` |
+| الخطر | `#EF4444` |
 
 ---
 
@@ -194,40 +172,49 @@ dotnet restore
 
 ```
 RestaurantMS.Desktop/
-├── 📄 RestaurantMS.Desktop.csproj    ← ملف المشروع الرئيسي
-├── 📄 appsettings.json               ← إعدادات الاتصال
-├── 📄 App.xaml / App.xaml.cs         ← نقطة بداية التطبيق + الأنماط
+├── 📄 RestaurantMS.Desktop.csproj    ← ملف المشروع (.NET 7)
+├── 📄 appsettings.json               ← إعدادات الاتصال بقاعدة البيانات
+├── 📄 App.xaml / App.xaml.cs         ← نقطة البدء + تعريف الأنماط والألوان
 │
 ├── 📁 Assets/
 │   └── itqansoft_logo.png            ← شعار itQAN Soft
+│
+├── 📁 Database/
+│   └── setup_sqlserver.sql           ← سكريبت إنشاء قاعدة البيانات (20 جدول)
 │
 ├── 📁 Data/
 │   └── DbHelper.cs                   ← مساعد قاعدة البيانات (Dapper)
 │
 ├── 📁 Models/
-│   └── CurrentUser.cs                ← نموذج المستخدم الحالي
+│   └── CurrentUser.cs                ← نموذج المستخدم الحالي في الجلسة
 │
-├── 📁 Helpers/
-│   └── PrintHelper.cs                ← طباعة الإيصالات والتذاكر
-│
-├── 📁 Database/
-│   └── setup_sqlserver.sql           ← سكريبت إنشاء قاعدة البيانات
+├── 📁 Services/
+│   ├── LicenseManager.cs             ← إدارة التراخيص (تشفير AES)
+│   ├── LicenseGenerator.cs           ← توليد مفاتيح الترخيص
+│   ├── LicenseData.cs                ← نموذج بيانات الترخيص
+│   ├── OwnerCredentialsManager.cs    ← إدارة بيانات المالك (مشفّرة في AppData)
+│   └── DesktopShortcut.cs            ← إنشاء اختصار سطح المكتب
 │
 └── 📁 Views/
+    ├── SetupWindow.xaml(.cs)          ← إعداد أول تشغيل (حساب المدير)
+    ├── LicenseActivationWindow.xaml(.cs) ← تفعيل الترخيص
     ├── LoginWindow.xaml(.cs)          ← شاشة تسجيل الدخول
-    ├── MainWindow.xaml(.cs)           ← النافذة الرئيسية + التنقل
+    ├── MainWindow.xaml(.cs)           ← النافذة الرئيسية + شريط التنقل
     │
-    ├── 📁 Dashboard/                  ← لوحة التحكم
-    ├── 📁 Pos/                        ← نقطة البيع
-    ├── 📁 Kitchen/                    ← إدارة المطبخ
+    ├── 📁 Owner/
+    │   └── OwnerPortalWindow.xaml(.cs) ← بوابة المالك الكاملة
+    │
+    ├── 📁 Dashboard/                  ← لوحة التحكم والإحصائيات
+    ├── 📁 Pos/                        ← نقطة البيع + بحث العملاء
+    ├── 📁 Kitchen/                    ← شاشة المطبخ وتتبع الطلبات
     ├── 📁 Menu/                       ← القائمة والتصنيفات
-    ├── 📁 Inventory/                  ← المخزون
-    ├── 📁 Customers/                  ← العملاء والولاء
-    ├── 📁 Suppliers/                  ← الموردون والمشتريات
+    ├── 📁 Inventory/                  ← المخزون وحركاته
+    ├── 📁 Customers/                  ← العملاء وبرنامج الولاء
+    ├── 📁 Suppliers/                  ← الموردون وطلبات الشراء
     ├── 📁 Sales/                      ← المبيعات والفواتير
     ├── 📁 Reservations/               ← الحجوزات
-    ├── 📁 Reports/                    ← التقارير
-    └── 📁 Admin/                      ← الإدارة والإعدادات
+    ├── 📁 Reports/                    ← التقارير والإحصائيات
+    └── 📁 Admin/                      ← المستخدمون والطاولات والإعدادات
 ```
 
 ---
@@ -238,7 +225,7 @@ RestaurantMS.Desktop/
 |--------|-------|
 | `roles` | أدوار المستخدمين |
 | `branches` | الفروع |
-| `users` | المستخدمون وبيانات الدخول |
+| `users` | المستخدمون وبيانات الدخول (بدون عمود email) |
 | `settings` | إعدادات النظام |
 | `menu_categories` | تصنيفات القائمة |
 | `menu_items` | أصناف القائمة |
@@ -255,23 +242,59 @@ RestaurantMS.Desktop/
 | `inventory_movements` | حركات المخزون |
 | `suppliers` | الموردون |
 | `purchase_orders` | طلبات الشراء |
-| `purchase_order_items` | عناصر طلبات الشراء |
 | `audit_logs` | سجل الأحداث |
 
 ---
 
-## 🎨 دليل الهوية البصرية — itQAN Soft
+## 🚨 حل المشاكل الشائعة
 
-| العنصر | القيمة |
-|--------|-------|
-| اللون البرتقالي | `#F7941D` |
-| اللون الأزرق | `#1B4E9E` |
-| خلفية النظام | `#0d1117` |
-| خلفية البطاقات | `#161b22` |
-| لون النصوص الفرعية | `#8b949e` |
-| لون الحدود | `#30363d` |
-| لون النجاح | `#3fb950` |
-| لون الخطأ | `#f85149` |
+### ❌ خطأ: "The current .NET SDK does not support targeting .NET 8.0"
+
+**السبب:** تثبيت SDK قديم.
+
+**الحل:** ثبِّت **.NET 7 SDK** من https://dotnet.microsoft.com/download/dotnet/7.0
+
+---
+
+### ❌ خطأ: "A network-related or instance-specific error"
+
+**السبب:** SQL Server Express غير مشغّل أو اسم الـ instance خاطئ.
+
+**الحل:**
+1. افتح **Services** (اضغط `Win+R` واكتب `services.msc`)
+2. ابحث عن **SQL Server (SQLEXPRESS)** وتأكد أنه **Running**
+
+أو عبر CMD كـ Administrator:
+```cmd
+net start MSSQL$SQLEXPRESS
+```
+
+---
+
+### ❌ خطأ: "Login failed for user"
+
+**الحل:**
+1. افتح SSMS → انقر بالزر الأيمن على السيرفر → **Properties → Security**
+2. فعّل **SQL Server and Windows Authentication mode**
+3. أعد تشغيل SQL Server Service
+
+---
+
+### ❌ خطأ: "Cannot find 'RestaurantMS' database"
+
+**الحل:** نفِّذ سكريبت `Database\setup_sqlserver.sql` (الخطوة الأولى)
+
+---
+
+### ❌ مشكلة: ترخيص الجهاز مرفوض
+
+**السبب:** مفتاح الترخيص مرتبط بجهاز مختلف.
+
+**الحل:**
+1. افتح بوابة المالك → قسم **التراخيص**
+2. انسخ **معرف الجهاز** من شاشة تفعيل الترخيص
+3. أنشئ ترخيصاً جديداً بهذا المعرف
+4. أدخل مفتاح الترخيص الجديد في شاشة التفعيل
 
 ---
 
@@ -279,7 +302,7 @@ RestaurantMS.Desktop/
 
 **شركة itQAN Soft — لنظم المعلومات والحلول البرمجية**
 
-> *"نبتكر الحلول — لنتقن التنفيذ — نصنع الفرق"*
+> *"نبتكر الحلول — نتقن التنفيذ — نصنع الفرق"*
 
 ---
 

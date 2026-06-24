@@ -1,5 +1,8 @@
 using Microsoft.Extensions.Configuration;
 using RestaurantMS.Desktop.Models;
+using RestaurantMS.Desktop.Services;
+using RestaurantMS.Desktop.Views;
+using RestaurantMS.Desktop.Views.Owner;
 using System.IO;
 using System.Windows;
 
@@ -29,5 +32,16 @@ public partial class App : Application
                 "خطأ", MessageBoxButton.OK, MessageBoxImage.Error);
             ex.Handled = true;
         };
+
+        if (OwnerCredentialsManager.IsFirstRun())
+        {
+            var ownerWin = new OwnerPortalWindow(isFirstRun: true);
+            ownerWin.Show();
+        }
+        else
+        {
+            var login = new LoginWindow();
+            login.Show();
+        }
     }
 }
