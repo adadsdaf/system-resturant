@@ -1,0 +1,14 @@
+C:\Users\DZ\Downloads\RestaurantMS.Desktop\obj\Debug\net8.0\LicenseGen.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\DZ\Downloads\RestaurantMS.Desktop\obj\Debug\net8.0\LicenseGen.AssemblyInfoInputs.cache
+C:\Users\DZ\Downloads\RestaurantMS.Desktop\obj\Debug\net8.0\LicenseGen.AssemblyInfo.cs
+C:\Users\DZ\Downloads\RestaurantMS.Desktop\obj\Debug\net8.0\LicenseGen.csproj.CoreCompileInputs.cache
+C:\Users\DZ\Downloads\RestaurantMS.Desktop\bin\Debug\net8.0\LicenseGen.exe
+C:\Users\DZ\Downloads\RestaurantMS.Desktop\bin\Debug\net8.0\LicenseGen.deps.json
+C:\Users\DZ\Downloads\RestaurantMS.Desktop\bin\Debug\net8.0\LicenseGen.runtimeconfig.json
+C:\Users\DZ\Downloads\RestaurantMS.Desktop\bin\Debug\net8.0\LicenseGen.dll
+C:\Users\DZ\Downloads\RestaurantMS.Desktop\bin\Debug\net8.0\LicenseGen.pdb
+C:\Users\DZ\Downloads\RestaurantMS.Desktop\obj\Debug\net8.0\LicenseGen.dll
+C:\Users\DZ\Downloads\RestaurantMS.Desktop\obj\Debug\net8.0\refint\LicenseGen.dll
+C:\Users\DZ\Downloads\RestaurantMS.Desktop\obj\Debug\net8.0\LicenseGen.pdb
+C:\Users\DZ\Downloads\RestaurantMS.Desktop\obj\Debug\net8.0\LicenseGen.genruntimeconfig.cache
+C:\Users\DZ\Downloads\RestaurantMS.Desktop\obj\Debug\net8.0\ref\LicenseGen.dll
