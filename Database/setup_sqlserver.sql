@@ -303,9 +303,9 @@ BEGIN
     -- admin / admin123
     INSERT INTO users (full_name, username, password_hash, role_id, branch_id) VALUES
         (N'مدير النظام', 'admin',
-         '$2a$11$hmDSmhXUdvbzcvsl1yA/zeTvwtnep9cFHYWfkpJUnwBzVMV/5OZte',
+         '$2a$11$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
          (SELECT role_id FROM roles WHERE role_name='Admin'),
-         (SELECT TOP 1 branch_id FROM branches WHERE is_active = 1));
+         (SELECT branch_id FROM branches WHERE arabic_name=N'الفرع الرئيسي'));
 END
 GO
 
@@ -314,9 +314,9 @@ BEGIN
     -- owner / owner2025
     INSERT INTO users (full_name, username, password_hash, role_id, branch_id) VALUES
         (N'صاحب المطعم', 'owner',
-         '$2a$11$UpMV0gS1B..nb9P4HwhFLOMK1CQgxP81iwfkIFODSrN1MnPUeLvAe',
+         '$2a$11$iFT4GTJ9a3p1RhBQKH.FXuCbWjXe/vkuiW.L0pGhSiYX/EIU.0bYq',
          (SELECT role_id FROM roles WHERE role_name='Owner'),
-         (SELECT TOP 1 branch_id FROM branches WHERE is_active = 1));
+         (SELECT branch_id FROM branches WHERE arabic_name=N'الفرع الرئيسي'));
 END
 GO
 
@@ -325,20 +325,9 @@ BEGIN
     -- cashier1 / cashier123
     INSERT INTO users (full_name, username, password_hash, role_id, branch_id) VALUES
         (N'أحمد الكاشير', 'cashier1',
-         '$2a$11$8JJLi4qolMtBKpfAMdsOVe/M2n9tlwn3siRbOoPUMR/zSnq/hEXZm',
+         '$2a$11$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
          (SELECT role_id FROM roles WHERE role_name='Cashier'),
-         (SELECT TOP 1 branch_id FROM branches WHERE is_active = 1));
-END
-GO
-
-IF NOT EXISTS (SELECT 1 FROM users WHERE username='Hassan')
-BEGIN
-    -- Hassan / 123456
-    INSERT INTO users (full_name, username, password_hash, role_id, branch_id) VALUES
-        (N'حسن المدير', 'Hassan',
-         '$2a$11$9OL1cupJHFrzZZhQH.FWbeGBZIfj5DvGyMEUKyt3CMxOaOwdiy9LO',
-         (SELECT role_id FROM roles WHERE role_name='Admin'),
-         (SELECT TOP 1 branch_id FROM branches WHERE is_active = 1));
+         (SELECT branch_id FROM branches WHERE arabic_name=N'الفرع الرئيسي'));
 END
 GO
 
