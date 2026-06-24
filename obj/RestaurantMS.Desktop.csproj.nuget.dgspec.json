@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\DZ\\Downloads\\RestaurantMS.Desktop\\RestaurantMS.Desktop.csproj": {}
+    "C:\\Users\\DZ\\Desktop\\system-resturant\\RestaurantMS.Desktop.csproj": {}
   },
   "projects": {
-    "C:\\Users\\DZ\\Downloads\\RestaurantMS.Desktop\\RestaurantMS.Desktop.csproj": {
+    "C:\\Users\\DZ\\Desktop\\system-resturant\\RestaurantMS.Desktop.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\DZ\\Downloads\\RestaurantMS.Desktop\\RestaurantMS.Desktop.csproj",
+        "projectUniqueName": "C:\\Users\\DZ\\Desktop\\system-resturant\\RestaurantMS.Desktop.csproj",
         "projectName": "RestaurantMS.Desktop",
-        "projectPath": "C:\\Users\\DZ\\Downloads\\RestaurantMS.Desktop\\RestaurantMS.Desktop.csproj",
+        "projectPath": "C:\\Users\\DZ\\Desktop\\system-resturant\\RestaurantMS.Desktop.csproj",
         "packagesPath": "C:\\Users\\DZ\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\DZ\\Downloads\\RestaurantMS.Desktop\\obj\\",
+        "outputPath": "C:\\Users\\DZ\\Desktop\\system-resturant\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\DZ\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -69,11 +69,11 @@
             },
             "Microsoft.Extensions.Configuration": {
               "target": "Package",
-              "version": "[8.0.0, )"
+              "version": "[7.0.0, )"
             },
             "Microsoft.Extensions.Configuration.Json": {
               "target": "Package",
-              "version": "[8.0.0, )"
+              "version": "[7.0.0, )"
             }
           },
           "imports": [
