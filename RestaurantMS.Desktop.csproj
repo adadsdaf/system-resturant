@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>RestaurantMS.Desktop</RootNamespace>
+    <AssemblyName>RestaurantMS.Desktop</AssemblyName>
+    <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
+    <Platforms>AnyCPU</Platforms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper"                                    Version="2.1.35" />
+    <PackageReference Include="Microsoft.Data.SqlClient"                  Version="5.2.1"  />
+    <PackageReference Include="BCrypt.Net-Next"                           Version="4.0.3"  />
+    <PackageReference Include="Microsoft.Extensions.Configuration"        Version="8.0.0"  />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json"   Version="8.0.0"  />
+    <PackageReference Include="MaterialDesignThemes"                      Version="5.1.0"  />
+    <PackageReference Include="MaterialDesignColors"                      Version="3.1.0"  />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\itqansoft_logo.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\itqansoft_logo.png"/>
+  </ItemGroup>
+
+</Project>

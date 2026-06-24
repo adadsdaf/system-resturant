@@ -1,0 +1,46 @@
+<Window x:Class="RestaurantMS.Desktop.Views.Inventory.IngredientDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        FlowDirection="RightToLeft" Background="#0d1117"
+        Title="مادة مخزنية" Height="360" Width="400"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <TextBlock x:Name="TxtTitle" Grid.Row="0" Text="إضافة مادة جديدة"
+                   Foreground="White" FontSize="18" FontWeight="Bold" Margin="0,0,0,20"/>
+        <StackPanel Grid.Row="1">
+            <TextBlock Text="اسم المادة" Foreground="#8b949e" FontSize="13" Margin="0,0,0,4"/>
+            <TextBox x:Name="TxtName" Style="{StaticResource DarkInput}" Height="40" Margin="0,0,0,12"/>
+            <Grid Margin="0,0,0,12">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="وحدة القياس" Foreground="#8b949e" FontSize="13" Margin="0,0,0,4"/>
+                    <TextBox x:Name="TxtUnit" Style="{StaticResource DarkInput}" Height="40" Text="كغ"/>
+                </StackPanel>
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="الحد الأدنى" Foreground="#8b949e" FontSize="13" Margin="0,0,0,4"/>
+                    <TextBox x:Name="TxtMin" Style="{StaticResource DarkInput}" Height="40" Text="0"/>
+                </StackPanel>
+            </Grid>
+            <Grid>
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="الكمية الحالية" Foreground="#8b949e" FontSize="13" Margin="0,0,0,4"/>
+                    <TextBox x:Name="TxtStock" Style="{StaticResource DarkInput}" Height="40" Text="0"/>
+                </StackPanel>
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="تكلفة/وحدة" Foreground="#8b949e" FontSize="13" Margin="0,0,0,4"/>
+                    <TextBox x:Name="TxtCost" Style="{StaticResource DarkInput}" Height="40" Text="0"/>
+                </StackPanel>
+            </Grid>
+        </StackPanel>
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,20,0,0">
+            <Button Content="حفظ" Style="{StaticResource PrimaryButton}" Width="100" Click="BtnSave_Click" Margin="0,0,8,0"/>
+            <Button Content="إلغاء" Style="{StaticResource GhostButton}" Width="80" Click="BtnCancel_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

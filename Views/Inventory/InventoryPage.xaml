@@ -1,0 +1,56 @@
+<Page x:Class="RestaurantMS.Desktop.Views.Inventory.InventoryPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      FlowDirection="RightToLeft" Background="#0d1117">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- أزرار -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
+            <Button Content="＋  مادة جديدة"    Style="{StaticResource PrimaryButton}" Click="BtnAdd_Click"     Margin="0,0,8,0"/>
+            <Button Content="📥 وارد مخزون"    Style="{StaticResource GhostButton}"   Click="BtnIn_Click"      Margin="0,0,8,0"/>
+            <Button Content="📤 صادر مخزون"    Style="{StaticResource GhostButton}"   Click="BtnOut_Click"     Margin="0,0,8,0"/>
+            <Button Content="📋 سجل الحركات"   Style="{StaticResource GhostButton}"   Click="BtnHistory_Click" Margin="0,0,8,0"/>
+            <Button Content="🔄 تحديث"         Style="{StaticResource GhostButton}"   Click="BtnRefresh_Click"/>
+        </StackPanel>
+
+        <!-- تنبيه المخزون المنخفض -->
+        <Border Grid.Row="1" x:Name="LowStockAlert" Background="#450a0a"
+                CornerRadius="8" Padding="12,8" Margin="0,0,0,12" Visibility="Collapsed">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="⚠️ " FontSize="16"/>
+                <TextBlock x:Name="TxtLowStockMsg" Foreground="#fca5a5" FontSize="13"/>
+            </StackPanel>
+        </Border>
+
+        <!-- الجدول -->
+        <DataGrid Grid.Row="2" x:Name="GridItems" Style="{StaticResource DataGridStyle}">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="#"              Binding="{Binding ingredient_id}" Width="50"/>
+                <DataGridTextColumn Header="المادة"        Binding="{Binding name}"           Width="*"/>
+                <DataGridTextColumn Header="وحدة القياس"  Binding="{Binding unit}"            Width="90"/>
+                <DataGridTextColumn Header="المخزون الحالي" Binding="{Binding stock_fmt}"    Width="120"/>
+                <DataGridTextColumn Header="الحد الأدنى"  Binding="{Binding min_fmt}"        Width="110"/>
+                <DataGridTextColumn Header="التكلفة/وحدة" Binding="{Binding cost_fmt}"       Width="110"/>
+                <DataGridTextColumn Header="الحالة"        Binding="{Binding status_txt}"    Width="100"/>
+                <DataGridTemplateColumn Header="إجراءات" Width="160">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="تعديل" Tag="{Binding}" Style="{StaticResource GhostButton}"
+                                        FontSize="12" Margin="0,0,6,0" Click="BtnEdit_Click"/>
+                                <Button Content="حذف" Tag="{Binding ingredient_id}"
+                                        Style="{StaticResource DangerButton}" FontSize="12"
+                                        Click="BtnDelete_Click"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Page>

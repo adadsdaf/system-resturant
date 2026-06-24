@@ -1,0 +1,87 @@
+<Page x:Class="RestaurantMS.Desktop.Views.Reports.ReportsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      FlowDirection="RightToLeft" Background="#0d1117">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- شريط التبويبات + الفلاتر -->
+        <Grid Grid.Row="0" Margin="0,0,0,14">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Orientation="Horizontal" Grid.Column="0">
+                <Button Content="مبيعات"         Tag="Sales"    Click="TabBtn_Click" Style="{StaticResource PrimaryButton}" Margin="0,0,6,0" x:Name="BtnTabSales"/>
+                <Button Content="أفضل الأصناف"   Tag="TopItems" Click="TabBtn_Click" Style="{StaticResource GhostButton}"   Margin="0,0,6,0"/>
+                <Button Content="طريقة الدفع"    Tag="Payment"  Click="TabBtn_Click" Style="{StaticResource GhostButton}"   Margin="0,0,6,0"/>
+                <Button Content="أداء الكاشير"   Tag="Staff"    Click="TabBtn_Click" Style="{StaticResource GhostButton}"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <TextBlock Text="من:" Foreground="#8b949e" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="13"/>
+                <DatePicker x:Name="DpFrom" Width="120" Height="36"/>
+                <TextBlock Text="إلى:" Foreground="#8b949e" VerticalAlignment="Center" Margin="12,0,6,0" FontSize="13"/>
+                <DatePicker x:Name="DpTo"   Width="120" Height="36"/>
+                <Button Content="📊 عرض" Style="{StaticResource PrimaryButton}"
+                        Margin="10,0,0,0" Click="BtnLoad_Click"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- المحتوى -->
+        <Border Grid.Row="1" Style="{StaticResource Card}">
+            <Grid>
+                <!-- تقرير المبيعات اليومية -->
+                <DataGrid x:Name="GridSales" Style="{StaticResource DataGridStyle}"
+                          Visibility="Visible">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="التاريخ"       Binding="{Binding sale_date}"    Width="120"/>
+                        <DataGridTextColumn Header="عدد الطلبات"   Binding="{Binding orders_count}" Width="110"/>
+                        <DataGridTextColumn Header="المبيعات"       Binding="{Binding total}"        Width="*"/>
+                        <DataGridTextColumn Header="الخصومات"      Binding="{Binding discounts}"    Width="110"/>
+                        <DataGridTextColumn Header="الضرائب"       Binding="{Binding taxes}"        Width="100"/>
+                        <DataGridTextColumn Header="الصافي"        Binding="{Binding net}"          Width="120"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <!-- تقرير أفضل الأصناف -->
+                <DataGrid x:Name="GridTopItems" Style="{StaticResource DataGridStyle}"
+                          Visibility="Collapsed">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="#"            Binding="{Binding rank}"        Width="50"/>
+                        <DataGridTextColumn Header="الصنف"        Binding="{Binding item_name}"   Width="*"/>
+                        <DataGridTextColumn Header="التصنيف"      Binding="{Binding category}"    Width="120"/>
+                        <DataGridTextColumn Header="الكمية المباعة" Binding="{Binding qty_sold}"  Width="120"/>
+                        <DataGridTextColumn Header="الإيرادات"    Binding="{Binding revenue}"     Width="120"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <!-- تقرير طريقة الدفع -->
+                <DataGrid x:Name="GridPayment" Style="{StaticResource DataGridStyle}"
+                          Visibility="Collapsed">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="طريقة الدفع" Binding="{Binding method}"  Width="*"/>
+                        <DataGridTextColumn Header="عدد المعاملات" Binding="{Binding count}" Width="130"/>
+                        <DataGridTextColumn Header="الإجمالي"    Binding="{Binding total}"   Width="150"/>
+                        <DataGridTextColumn Header="النسبة %"    Binding="{Binding pct}"     Width="100"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <!-- تقرير أداء الكاشير -->
+                <DataGrid x:Name="GridStaff" Style="{StaticResource DataGridStyle}"
+                          Visibility="Collapsed">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="الكاشير"     Binding="{Binding staff_name}" Width="*"/>
+                        <DataGridTextColumn Header="عدد الطلبات" Binding="{Binding orders}"     Width="120"/>
+                        <DataGridTextColumn Header="إجمالي المبيعات" Binding="{Binding total}"  Width="150"/>
+                        <DataGridTextColumn Header="متوسط الطلب" Binding="{Binding avg}"        Width="130"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </Border>
+    </Grid>
+</Page>

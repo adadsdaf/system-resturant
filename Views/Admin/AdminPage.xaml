@@ -1,0 +1,113 @@
+<Page x:Class="RestaurantMS.Desktop.Views.Admin.AdminPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      FlowDirection="RightToLeft" Background="{StaticResource BgColor}">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- تبويبات الإدارة -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,14">
+            <Button Content="👤  المستخدمون" Tag="Users"    Click="TabBtn_Click" Style="{StaticResource PrimaryButton}" Margin="0,0,6,0"/>
+            <Button Content="🏪  الطاولات"  Tag="Tables"   Click="TabBtn_Click" Style="{StaticResource GhostButton}"   Margin="0,0,6,0"/>
+            <Button Content="⚙️  الإعدادات" Tag="Settings" Click="TabBtn_Click" Style="{StaticResource GhostButton}"   Margin="0,0,6,0"/>
+            <Button Content="📝  سجل الأحداث" Tag="Logs"  Click="TabBtn_Click" Style="{StaticResource GhostButton}"/>
+        </StackPanel>
+
+        <!-- محتوى التبويب -->
+        <Border Grid.Row="1" Style="{StaticResource Card}">
+            <Grid>
+                <!-- مستخدمون -->
+                <Grid x:Name="PanelUsers" Visibility="Visible">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
+                        <Button Content="＋  مستخدم جديد" Style="{StaticResource PrimaryButton}"
+                                Click="BtnAddUser_Click" Margin="0,0,8,0"/>
+                        <Button Content="🔄 تحديث" Style="{StaticResource GhostButton}" Click="BtnRefreshUsers_Click"/>
+                    </StackPanel>
+                    <DataGrid Grid.Row="1" x:Name="GridUsers" Style="{StaticResource DataGridStyle}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="#"           Binding="{Binding user_id}"     Width="50"/>
+                            <DataGridTextColumn Header="الاسم"       Binding="{Binding full_name}"   Width="*"/>
+                            <DataGridTextColumn Header="المستخدم"   Binding="{Binding username}"    Width="130"/>
+                            <DataGridTextColumn Header="الدور"       Binding="{Binding role_name}"   Width="100"/>
+                            <DataGridTextColumn Header="الفرع"       Binding="{Binding branch_name}" Width="120"/>
+                            <DataGridTextColumn Header="آخر دخول"    Binding="{Binding last_login}"  Width="130"/>
+                            <DataGridTextColumn Header="الحالة"      Binding="{Binding status_txt}"  Width="90"/>
+                            <DataGridTemplateColumn Header="إجراءات" Width="180">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Content="تعديل" Tag="{Binding}" Style="{StaticResource GhostButton}"
+                                                    FontSize="12" Margin="0,0,4,0" Click="BtnEditUser_Click"/>
+                                            <Button Content="تفعيل/إيقاف" Tag="{Binding user_id}"
+                                                    Style="{StaticResource GhostButton}" FontSize="12"
+                                                    Click="BtnToggleUser_Click"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+
+                <!-- طاولات -->
+                <Grid x:Name="PanelTables" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
+                        <Button Content="＋  طاولة جديدة" Style="{StaticResource PrimaryButton}"
+                                Click="BtnAddTable_Click" Margin="0,0,8,0"/>
+                        <Button Content="🔄 تحديث" Style="{StaticResource GhostButton}" Click="BtnRefreshTables_Click"/>
+                    </StackPanel>
+                    <DataGrid Grid.Row="1" x:Name="GridTables" Style="{StaticResource DataGridStyle}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="#"          Binding="{Binding table_id}"     Width="60"/>
+                            <DataGridTextColumn Header="رقم الطاولة" Binding="{Binding table_number}" Width="120"/>
+                            <DataGridTextColumn Header="السعة"     Binding="{Binding capacity}"     Width="90"/>
+                            <DataGridTextColumn Header="الموقع"    Binding="{Binding location}"     Width="*"/>
+                            <DataGridTextColumn Header="الحالة"    Binding="{Binding status_txt}"   Width="100"/>
+                            <DataGridTemplateColumn Header="إجراءات" Width="160">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Content="تعديل" Tag="{Binding}" Style="{StaticResource GhostButton}"
+                                                    FontSize="12" Margin="0,0,4,0" Click="BtnEditTable_Click"/>
+                                            <Button Content="حذف" Tag="{Binding table_id}"
+                                                    Style="{StaticResource DangerButton}" FontSize="12"
+                                                    Click="BtnDeleteTable_Click"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+
+                <!-- إعدادات -->
+                <ScrollViewer x:Name="PanelSettings" Visibility="Collapsed"
+                              VerticalScrollBarVisibility="Auto">
+                    <StackPanel x:Name="SettingsPanel" MaxWidth="480"/>
+                </ScrollViewer>
+
+                <!-- سجل الأحداث -->
+                <DataGrid x:Name="PanelLogs" Visibility="Collapsed"
+                          Style="{StaticResource DataGridStyle}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="التاريخ"  Binding="{Binding date_fmt}"  Width="140"/>
+                        <DataGridTextColumn Header="المستخدم" Binding="{Binding user_name}" Width="130"/>
+                        <DataGridTextColumn Header="الحدث"    Binding="{Binding action}"    Width="*"/>
+                        <DataGridTextColumn Header="التفاصيل" Binding="{Binding details}"   Width="200"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </Border>
+    </Grid>
+</Page>

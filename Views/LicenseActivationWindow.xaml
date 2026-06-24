@@ -1,0 +1,105 @@
+﻿<Window x:Class="RestaurantMS.Desktop.Views.LicenseActivationWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="تنشيط النظام" Height="520" Width="500"
+        FlowDirection="RightToLeft"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource BgColor}"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        ResizeMode="NoResize">
+    <Border Background="{StaticResource BgColor}" CornerRadius="16" Margin="8">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="30" ShadowDepth="10" Opacity="0.5" Color="#000"/>
+        </Border.Effect>
+
+        <Grid Margin="32">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <StackPanel Grid.Row="0" HorizontalAlignment="Center" Margin="0,0,0,20">
+                <Border Width="80" Height="80" CornerRadius="20" Margin="0,0,0,12"
+                        HorizontalAlignment="Center">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Color="{StaticResource AccentOrange}" Offset="0"/>
+                            <GradientStop Color="{StaticResource AccentBlue}" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <TextBlock Text="🔑" FontSize="36" HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                </Border>
+                <TextBlock Text="تنشيط نظام إدارة المطاعم"
+                           Foreground="{StaticResource TextPrimary}" FontSize="20" FontWeight="Bold"
+                           HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                <TextBlock Text="أدخل مفتاح الترخيص للمتابعة"
+                           Foreground="{StaticResource TextMuted}" FontSize="13"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- Activation Form -->
+            <StackPanel Grid.Row="1">
+                <TextBlock Text="مفتاح الترخيص *" Foreground="{StaticResource TextPrimary}" FontSize="13" Margin="0,0,0,6"/>
+                <Border Background="White" CornerRadius="10" BorderBrush="{StaticResource BorderBrush2}" BorderThickness="1"
+                        Margin="0,0,0,16">
+                    <TextBox x:Name="TxtLicenseKey" Background="Transparent" Foreground="{StaticResource TextPrimary}"
+                             BorderThickness="0" FontSize="14" Padding="14,12"
+                             CaretBrush="{StaticResource AccentOrange}" Height="44"
+                             TextChanged="TxtLicenseKey_Changed"/>
+                </Border>
+
+                <!-- Error Message -->
+                <Border x:Name="ErrorPanel" Background="#fef2f2" CornerRadius="8"
+                        BorderBrush="#fecaca" BorderThickness="1" Padding="12" Margin="0,0,0,16"
+                        Visibility="Collapsed">
+                    <TextBlock x:Name="TxtError" Foreground="{StaticResource DangerBrush}" FontSize="13"
+                               TextWrapping="Wrap"/>
+                </Border>
+
+                <!-- Success Message -->
+                <Border x:Name="SuccessPanel" Background="#f0fdf4" CornerRadius="8"
+                        BorderBrush="#bbf7d0" BorderThickness="1" Padding="12" Margin="0,0,0,16"
+                        Visibility="Collapsed">
+                    <StackPanel>
+                        <TextBlock Foreground="{StaticResource SuccessBrush}" FontSize="13" FontWeight="Bold"
+                                   Text="✅ تم تنشيط النظام بنجاح!" Margin="0,0,0,4"/>
+                        <TextBlock x:Name="TxtSuccess" Foreground="#15803d" FontSize="12"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Info Text -->
+                <TextBlock Text="للحصول على مفتاح ترخيص، يرجى الاتصال بـ:"
+                           Foreground="{StaticResource TextMuted}" FontSize="12" Margin="0,0,0,6"/>
+                <TextBlock Text="📧 info@itqansoft.com  |  📞 0500000000"
+                           Foreground="{StaticResource AccentOrange}" FontSize="13" FontWeight="SemiBold"
+                           HorizontalAlignment="Center" Margin="0,0,0,16"/>
+
+                <!-- Device Info -->
+                <Border Background="{StaticResource SurfaceBrush}" CornerRadius="8" Padding="12" Margin="0,0,0,16"
+                        BorderBrush="{StaticResource BorderBrush2}" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="معلومات الجهاز" Foreground="{StaticResource TextPrimary}" FontSize="11"
+                                   FontWeight="Bold" Margin="0,0,0,6"/>
+                        <TextBlock x:Name="TxtDeviceId" Foreground="{StaticResource TextMuted}" FontSize="11"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <!-- Buttons -->
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button x:Name="BtnActivate" Content="🔓  تنشيط" Style="{StaticResource PrimaryButton}"
+                        Width="140" Height="44" FontSize="14" Click="BtnActivate_Click" Margin="0,0,8,0"/>
+                <Button Content="إغلاق" Style="{StaticResource GhostButton}"
+                        Width="100" Height="44" FontSize="14" Click="BtnClose_Click"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>
+
+

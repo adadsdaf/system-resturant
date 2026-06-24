@@ -1,0 +1,39 @@
+<Page x:Class="RestaurantMS.Desktop.Views.Suppliers.SuppliersPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      FlowDirection="RightToLeft" Background="#0d1117">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
+            <Button Content="＋  مورد جديد"      Style="{StaticResource PrimaryButton}" Click="BtnAdd_Click"    Margin="0,0,8,0"/>
+            <Button Content="📋  طلب شراء جديد" Style="{StaticResource GhostButton}"   Click="BtnOrder_Click"  Margin="0,0,8,0"/>
+            <Button Content="🔄 تحديث"           Style="{StaticResource GhostButton}"   Click="BtnRefresh_Click"/>
+        </StackPanel>
+        <DataGrid Grid.Row="1" x:Name="GridSuppliers" Style="{StaticResource DataGridStyle}">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="#"        Binding="{Binding supplier_id}"   Width="60"/>
+                <DataGridTextColumn Header="المورد"   Binding="{Binding company_name}"  Width="*"/>
+                <DataGridTextColumn Header="المنتج"   Binding="{Binding contact_name}"  Width="130"/>
+                <DataGridTextColumn Header="الهاتف"   Binding="{Binding phone}"         Width="120"/>
+                <DataGridTextColumn Header="البريد"   Binding="{Binding email}"         Width="160"/>
+                <DataGridTextColumn Header="الحالة"   Binding="{Binding status_txt}"    Width="90"/>
+                <DataGridTemplateColumn Header="إجراءات" Width="160">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="تعديل" Tag="{Binding}" Style="{StaticResource GhostButton}"
+                                        FontSize="12" Margin="0,0,6,0" Click="BtnEdit_Click"/>
+                                <Button Content="طلبات" Tag="{Binding supplier_id}"
+                                        Style="{StaticResource GhostButton}" FontSize="12"
+                                        Click="BtnOrders_Click"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Page>
