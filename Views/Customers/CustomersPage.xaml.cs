@@ -18,15 +18,23 @@ public partial class CustomersPage : Page
 
     private async Task LoadAsync()
     {
-        _currency = await _db.ExecuteScalarAsync<string>("SELECT value FROM settings WHERE setting_key='currency'") ?? "ريال";
-        _allData = (await _db.QueryAsync<dynamic>(
-            @"SELECT c.customer_id, c.full_name, c.phone, c.email, c.is_active,
-                     COALESCE(la.points_balance,0) AS points,
-                     COALESCE((SELECT SUM(total_amount) FROM orders o WHERE o.customer_id=c.customer_id),0) AS total_spent
-              FROM customers c
-              LEFT JOIN loyalty_accounts la ON c.customer_id = la.customer_id
-              ORDER BY c.full_name")).ToList();
-        Render(_allData);
+        try
+        {
+            _currency = await _db.ExecuteScalarAsync<string>(
+                "SELECT value FROM settings WHERE setting_key='currency'") ?? "ريال";
+            _allData = (await _db.QueryAsync<dynamic>(
+                @"SELECT c.customer_id, c.full_name, c.phone, c.email, c.is_active,
+                         COALESCE(la.points_balance,0) AS points,
+                         COALESCE((SELECT SUM(total_amount) FROM orders o WHERE o.customer_id=c.customer_id),0) AS total_spent
+                  FROM customers c
+                  LEFT JOIN loyalty_accounts la ON c.customer_id = la.customer_id
+                  ORDER BY c.full_name")).ToList();
+            Render(_allData);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"خطأ في تحميل بيانات العملاء:\n{ex.Message}", "خطأ", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
     }
 
     private void Render(IEnumerable<dynamic> data)

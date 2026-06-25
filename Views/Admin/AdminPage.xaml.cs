@@ -79,23 +79,42 @@ public partial class AdminPage : Page
     // ===== المستخدمون =====
     private async Task LoadUsersAsync()
     {
-        var rows = await _db.QueryAsync<dynamic>(
-            @"SELECT u.user_id, u.full_name, u.username, u.is_active, u.last_login,
-                     u.role_id, u.branch_id,
-                     r.role_name, b.arabic_name AS branch_name
-              FROM users u
-              JOIN roles    r ON u.role_id   = r.role_id
-              JOIN branches b ON u.branch_id = b.branch_id
-              ORDER BY u.full_name");
-
-        GridUsers.ItemsSource = rows.Select(r => new
+        try
         {
-            r.user_id, r.full_name, r.username, r.role_name,
-            branch_name = (string)(r.branch_name ?? ""),
-            last_login  = r.last_login != null ? ((DateTime)r.last_login).ToString("dd/MM/yyyy HH:mm") : "لم يسجّل",
-            status_txt  = ((bool)r.is_active) ? "✅ نشط" : "⛔ موقوف",
-            r.is_active
-        }).ToList();
+            // المستخدم الحالي: إذا لم يكن مالكاً فلا يرى حسابات المالك
+            bool currentIsOwner = App.CurrentUser?.IsOwner == true;
+            int  currentUserId  = App.CurrentUser?.UserId ?? 0;
+
+            var rows = await _db.QueryAsync<dynamic>(
+                @"SELECT u.user_id, u.full_name, u.username, u.is_active, u.last_login,
+                         u.role_id, u.branch_id,
+                         ISNULL(r.role_name,'—') AS role_name,
+                         ISNULL(b.arabic_name,'—') AS branch_name,
+                         CASE WHEN ISNULL(r.role_name,'') = 'Owner' THEN 1 ELSE 0 END AS is_owner_row
+                  FROM users u
+                  LEFT JOIN roles    r ON u.role_id   = r.role_id
+                  LEFT JOIN branches b ON u.branch_id = b.branch_id
+                  WHERE @isOwner = 1 OR ISNULL(r.role_name,'') != 'Owner'
+                  ORDER BY is_owner_row DESC, u.full_name",
+                new { isOwner = currentIsOwner ? 1 : 0 });
+
+            GridUsers.ItemsSource = rows.Select(r => new
+            {
+                r.user_id, r.full_name, r.username, r.role_name,
+                branch_name  = (string)(r.branch_name ?? ""),
+                last_login   = r.last_login != null ? ((DateTime)r.last_login).ToString("dd/MM/yyyy HH:mm") : "لم يسجّل",
+                status_txt   = ((bool)r.is_active) ? "✅ نشط" : "⛔ موقوف",
+                r.is_active,
+                is_owner_row = (int)r.is_owner_row,
+                // إضافة علامة للحماية: لا يمكن للمستخدم تعديل نفسه أو حساب أعلى منه
+                is_protected = (int)r.is_owner_row == 1 && !currentIsOwner,
+                is_self      = (int)r.user_id == currentUserId
+            }).ToList();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"خطأ في تحميل المستخدمين:\n{ex.Message}", "خطأ", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
     }
 
     private void BtnAddUser_Click(object s, RoutedEventArgs e)
@@ -107,6 +126,20 @@ public partial class AdminPage : Page
     private void BtnEditUser_Click(object s, RoutedEventArgs e)
     {
         if (((Button)s).Tag is not { } user) return;
+
+        // حماية: لا يمكن تعديل حساب المالك من قبل غير المالك
+        try
+        {
+            dynamic u = user;
+            if ((int)u.is_owner_row == 1 && App.CurrentUser?.IsOwner != true)
+            {
+                MessageBox.Show("لا يمكنك تعديل حساب مالك النظام.\nهذه الصلاحية محجوزة لمالك النظام فقط.",
+                    "غير مصرح", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+        }
+        catch { /* تجاهل خطأ dynamic cast */ }
+
         var dlg = new UserDialog(_db, user);
         if (dlg.ShowDialog() == true) _ = LoadUsersAsync();
     }
@@ -114,7 +147,32 @@ public partial class AdminPage : Page
     private async void BtnToggleUser_Click(object s, RoutedEventArgs e)
     {
         if (((Button)s).Tag is not int id) return;
-        if (id == App.CurrentUser!.UserId) { MessageBox.Show("لا يمكن إيقاف حسابك الحالي"); return; }
+
+        // حماية: لا يمكن إيقاف حسابك الحالي
+        if (id == App.CurrentUser!.UserId)
+        {
+            MessageBox.Show("لا يمكنك إيقاف حسابك الشخصي أثناء تسجيل الدخول.",
+                "تنبيه", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        // حماية: لا يمكن إيقاف حساب المالك من قبل غير المالك
+        try
+        {
+            var targetRole = await _db.ExecuteScalarAsync<string>(
+                @"SELECT r.role_name FROM users u
+                  LEFT JOIN roles r ON u.role_id = r.role_id
+                  WHERE u.user_id = @id", new { id });
+
+            if (targetRole == "Owner" && App.CurrentUser.IsOwner != true)
+            {
+                MessageBox.Show("لا يمكنك تعطيل حساب مالك النظام.\nهذه الصلاحية محجوزة لمالك النظام فقط.",
+                    "غير مصرح", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+        }
+        catch { /* تابع في حالة فشل الاستعلام */ }
+
         await _db.ExecuteAsync(
             "UPDATE users SET is_active=CASE WHEN is_active=1 THEN 0 ELSE 1 END WHERE user_id=@id",
             new { id });
@@ -126,16 +184,23 @@ public partial class AdminPage : Page
     // ===== الطاولات =====
     private async Task LoadTablesAsync()
     {
-        var rows = await _db.QueryAsync<dynamic>(
-            "SELECT table_id, table_number, capacity, location, is_active FROM tables ORDER BY table_number");
-
-        GridTables.ItemsSource = rows.Select(r => new
+        try
         {
-            r.table_id, r.table_number, r.capacity,
-            location   = (string)(r.location ?? ""),
-            status_txt = ((bool)r.is_active) ? "✅ متاحة" : "⛔ موقوفة",
-            r.is_active
-        }).ToList();
+            var rows = await _db.QueryAsync<dynamic>(
+                "SELECT table_id, table_number, capacity, location, is_active FROM tables ORDER BY table_number");
+
+            GridTables.ItemsSource = rows.Select(r => new
+            {
+                r.table_id, r.table_number, r.capacity,
+                location   = (string)(r.location ?? ""),
+                status_txt = ((bool)r.is_active) ? "✅ متاحة" : "⛔ موقوفة",
+                r.is_active
+            }).ToList();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"خطأ في تحميل الطاولات:\n{ex.Message}", "خطأ", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
     }
 
     private void BtnAddTable_Click(object s, RoutedEventArgs e)
@@ -164,6 +229,8 @@ public partial class AdminPage : Page
     // ===== الإعدادات =====
     private async Task LoadSettingsAsync()
     {
+        try
+        {
         SettingsPanel.Children.Clear();
         var settings = await _db.QueryAsync<dynamic>(
             "SELECT setting_key AS [key], value, description FROM settings ORDER BY setting_key");
@@ -212,6 +279,11 @@ public partial class AdminPage : Page
                     (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#E2E8F0")),
                 Margin = new Thickness(0, 16, 0, 0)
             });
+        }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"خطأ في تحميل الإعدادات:\n{ex.Message}", "خطأ", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 
@@ -449,18 +521,25 @@ public partial class AdminPage : Page
     // ===== سجل الأحداث =====
     private async Task LoadLogsAsync()
     {
-        var rows = await _db.QueryAsync<dynamic>(
-            @"SELECT TOP 200 al.created_at, al.action, al.details, u.full_name AS user_name
-              FROM audit_logs al
-              LEFT JOIN users u ON al.user_id = u.user_id
-              ORDER BY al.created_at DESC");
-
-        GridLogs.ItemsSource = rows.Select(r => new
+        try
         {
-            date_fmt  = ((DateTime)r.created_at).ToString("dd/MM/yyyy HH:mm"),
-            user_name = (string)(r.user_name ?? "نظام"),
-            action    = (string)r.action,
-            details   = (string)(r.details ?? "")
-        }).ToList();
+            var rows = await _db.QueryAsync<dynamic>(
+                @"SELECT TOP 200 al.created_at, al.action, al.details, u.full_name AS user_name
+                  FROM audit_logs al
+                  LEFT JOIN users u ON al.user_id = u.user_id
+                  ORDER BY al.created_at DESC");
+
+            GridLogs.ItemsSource = rows.Select(r => new
+            {
+                date_fmt  = ((DateTime)r.created_at).ToString("dd/MM/yyyy HH:mm"),
+                user_name = (string)(r.user_name ?? "نظام"),
+                action    = (string)r.action,
+                details   = (string)(r.details ?? "")
+            }).ToList();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"خطأ في تحميل سجل الأحداث:\n{ex.Message}", "خطأ", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
     }
 }

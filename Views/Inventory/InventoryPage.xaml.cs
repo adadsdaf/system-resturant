@@ -16,31 +16,38 @@ public partial class InventoryPage : Page
 
     private async Task LoadAsync()
     {
-        var items = await _db.QueryAsync<dynamic>(
-            @"SELECT ingredient_id, ingredient_name AS name, unit,
-                     current_stock, min_stock, cost_per_unit, is_active,
-                     CASE WHEN current_stock <= min_stock THEN 1 ELSE 0 END AS is_low
-              FROM ingredients WHERE is_active=1
-              ORDER BY is_low DESC, ingredient_name");
-
-        var list = items.Select(i => new
+        try
         {
-            i.ingredient_id, i.name, i.unit, i.current_stock, i.min_stock, i.cost_per_unit, i.is_low,
-            stock_fmt  = $"{i.current_stock:N2} {i.unit}",
-            min_fmt    = $"{i.min_stock:N2} {i.unit}",
-            cost_fmt   = $"{i.cost_per_unit:N2}",
-            status_txt = ((int)i.is_low == 1) ? "⚠️ منخفض" : "✅ كافٍ"
-        }).ToList();
+            var items = await _db.QueryAsync<dynamic>(
+                @"SELECT ingredient_id, ingredient_name AS name, unit,
+                         current_stock, min_stock, cost_per_unit, is_active,
+                         CASE WHEN current_stock <= min_stock THEN 1 ELSE 0 END AS is_low
+                  FROM ingredients WHERE is_active=1
+                  ORDER BY is_low DESC, ingredient_name");
 
-        GridInventory.ItemsSource = list;
+            var list = items.Select(i => new
+            {
+                i.ingredient_id, i.name, i.unit, i.current_stock, i.min_stock, i.cost_per_unit, i.is_low,
+                stock_fmt  = $"{i.current_stock:N2} {i.unit}",
+                min_fmt    = $"{i.min_stock:N2} {i.unit}",
+                cost_fmt   = $"{i.cost_per_unit:N2}",
+                status_txt = ((int)i.is_low == 1) ? "⚠️ منخفض" : "✅ كافٍ"
+            }).ToList();
 
-        var lowCount = list.Count(x => (int)x.is_low == 1);
-        if (lowCount > 0)
-        {
-            LowStockAlert.Visibility = Visibility.Visible;
-            TxtLowStockMsg.Text = $"يوجد {lowCount} مادة تحت الحد الأدنى — يُنصح بإعادة الطلب";
+            GridInventory.ItemsSource = list;
+
+            var lowCount = list.Count(x => (int)x.is_low == 1);
+            if (lowCount > 0)
+            {
+                LowStockAlert.Visibility = Visibility.Visible;
+                TxtLowStockMsg.Text = $"يوجد {lowCount} مادة تحت الحد الأدنى — يُنصح بإعادة الطلب";
+            }
+            else LowStockAlert.Visibility = Visibility.Collapsed;
         }
-        else LowStockAlert.Visibility = Visibility.Collapsed;
+        catch (Exception ex)
+        {
+            MessageBox.Show($"خطأ في تحميل المخزون:\n{ex.Message}", "خطأ", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
     }
 
     private void BtnAdd_Click(object s, RoutedEventArgs e)

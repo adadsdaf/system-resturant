@@ -5,21 +5,23 @@
         Height="780" Width="1320"
         FlowDirection="RightToLeft"
         WindowStartupLocation="CenterScreen"
-        Background="{StaticResource BgBrush}"
+        Background="Transparent"
         WindowStyle="None"
         AllowsTransparency="True"
-        MinWidth="1100" MinHeight="620">
+        MinWidth="1100" MinHeight="640">
 
     <Window.Resources>
-        <Style x:Key="NavBtn" TargetType="Button">
+
+        <!-- زر الشريط الجانبي الأيسر -->
+        <Style x:Key="SideBtn" TargetType="Button">
             <Setter Property="Background"      Value="Transparent"/>
             <Setter Property="Foreground"      Value="#94A3B8"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Height"          Value="42"/>
-            <Setter Property="Margin"          Value="0,1"/>
+            <Setter Property="Height"          Value="46"/>
+            <Setter Property="Margin"          Value="6,2"/>
             <Setter Property="Cursor"          Value="Hand"/>
             <Setter Property="HorizontalContentAlignment" Value="Right"/>
-            <Setter Property="Padding"         Value="14,0"/>
+            <Setter Property="Padding"         Value="12,0"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -30,7 +32,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="bg" Property="Background" Value="#243447"/>
+                                <Setter TargetName="bg" Property="Background" Value="#1E3A5F"/>
                                 <Setter Property="Foreground" Value="White"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -39,170 +41,182 @@
             </Setter>
         </Style>
 
-        <Style x:Key="NavBtnActive" TargetType="Button" BasedOn="{StaticResource NavBtn}">
-            <Setter Property="Background" Value="#1c3a5e"/>
-            <Setter Property="Foreground" Value="#F7941D"/>
+        <!-- زر الشريط الجانبي نشط -->
+        <Style x:Key="SideBtnActive" TargetType="Button" BasedOn="{StaticResource SideBtn}">
+            <Setter Property="Background" Value="#1B4E9E"/>
+            <Setter Property="Foreground" Value="White"/>
         </Style>
+
+        <!-- عنوان فئة في الشريط -->
+        <Style x:Key="SideCatLabel" TargetType="TextBlock">
+            <Setter Property="Foreground"  Value="#475569"/>
+            <Setter Property="FontSize"    Value="9"/>
+            <Setter Property="FontWeight"  Value="SemiBold"/>
+            <Setter Property="Margin"      Value="14,10,14,3"/>
+        </Style>
+
+        <!-- عنصر TreeView رئيسي (مجموعة) -->
+        <Style x:Key="TreeCatItem" TargetType="TreeViewItem">
+            <Setter Property="Foreground"   Value="#1E293B"/>
+            <Setter Property="FontWeight"   Value="SemiBold"/>
+            <Setter Property="FontSize"     Value="12"/>
+            <Setter Property="Padding"      Value="6,5"/>
+            <Setter Property="IsExpanded"   Value="True"/>
+            <Setter Property="Cursor"       Value="Hand"/>
+            <Setter Property="Background"   Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TreeViewItem">
+                        <StackPanel>
+                            <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                    CornerRadius="6" Margin="4,1">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <ContentPresenter Grid.Column="0" ContentSource="Header"
+                                                      Margin="{TemplateBinding Padding}"
+                                                      VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="1" x:Name="Arrow" Text="▸"
+                                               Foreground="#64748B" FontSize="10"
+                                               VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                </Grid>
+                            </Border>
+                            <ItemsPresenter x:Name="ItemsHost"/>
+                        </StackPanel>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsExpanded" Value="True">
+                                <Setter TargetName="Arrow" Property="Text" Value="▾"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#F1F5F9"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#EFF3FA"/>
+                            </Trigger>
+                            <Trigger Property="IsExpanded" Value="False">
+                                <Setter TargetName="ItemsHost" Property="Visibility" Value="Collapsed"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- عنصر TreeView فرعي (صفحة) -->
+        <Style x:Key="TreeLeafItem" TargetType="TreeViewItem">
+            <Setter Property="Foreground"   Value="#334155"/>
+            <Setter Property="FontSize"     Value="12"/>
+            <Setter Property="Padding"      Value="6,4"/>
+            <Setter Property="Cursor"       Value="Hand"/>
+            <Setter Property="Background"   Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TreeViewItem">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                CornerRadius="6" Margin="8,1,4,1">
+                            <ContentPresenter ContentSource="Header"
+                                              Margin="{TemplateBinding Padding}"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#EFF3FA"/>
+                                <Setter Property="Foreground" Value="#1B4E9E"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#DBEAFE"/>
+                                <Setter Property="Foreground" Value="#1B4E9E"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
     </Window.Resources>
 
-    <Border x:Name="OuterBorder" Background="{StaticResource BgBrush}" CornerRadius="14" Margin="8">
+    <Border x:Name="OuterBorder" CornerRadius="14" Margin="8">
+        <Border.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                <GradientStop Color="#0F172A" Offset="0"/>
+                <GradientStop Color="#1A2332" Offset="1"/>
+            </LinearGradientBrush>
+        </Border.Background>
         <Border.Effect>
-            <DropShadowEffect BlurRadius="30" ShadowDepth="8" Opacity="0.12" Color="#000000"/>
+            <DropShadowEffect BlurRadius="30" ShadowDepth="8" Opacity="0.2" Color="#000000"/>
         </Border.Effect>
 
         <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="230"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="58"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="26"/>
+            </Grid.RowDefinitions>
 
-            <!-- ============ الشريط الجانبي (داكن) ============ -->
-            <Border Grid.Column="0" CornerRadius="14,0,0,14">
+            <!-- ============================================================ -->
+            <!--   شريط العنوان العلوي                                        -->
+            <!-- ============================================================ -->
+            <Border Grid.Row="0" CornerRadius="14,14,0,0" MouseLeftButtonDown="TitleBar_MouseDown">
                 <Border.Background>
-                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
                         <GradientStop Color="#0F172A" Offset="0"/>
-                        <GradientStop Color="#1A2332" Offset="1"/>
+                        <GradientStop Color="#162032" Offset="1"/>
                     </LinearGradientBrush>
                 </Border.Background>
-                <Border.BorderBrush>
-                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                        <GradientStop Color="#F7941D" Offset="0"/>
-                        <GradientStop Color="#1B4E9E" Offset="1"/>
-                    </LinearGradientBrush>
-                </Border.BorderBrush>
-                <Border.BorderThickness>0,0,1,0</Border.BorderThickness>
 
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
+                <Grid FlowDirection="LeftToRight" Margin="12,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>   <!-- شعار + اسم النظام -->
+                        <ColumnDefinition Width="*"/>      <!-- نص الترخيص وسط -->
+                        <ColumnDefinition Width="Auto"/>   <!-- مستخدم + أزرار -->
+                    </Grid.ColumnDefinitions>
 
-                    <!-- شعار النظام -->
-                    <StackPanel Grid.Row="0" Margin="0,16,0,0">
-                        <Border HorizontalAlignment="Center" Margin="0,0,0,8">
-                            <Image Source="pack://application:,,,/Assets/itqansoft_logo.png"
-                                   Width="80" Height="80"
-                                   RenderOptions.BitmapScalingMode="HighQuality"/>
-                        </Border>
-                        <TextBlock Text="نظام إدارة المطاعم"
-                                   Foreground="White" FontSize="13" FontWeight="Bold"
-                                   HorizontalAlignment="Center"/>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,2,0,0">
-                            <TextBlock Text="Restaurant" Foreground="#F7941D" FontSize="11" FontWeight="SemiBold"/>
-                            <TextBlock Text="MS" Foreground="#1B4E9E" FontSize="11" FontWeight="Bold"/>
+                    <!-- الشعار + اسم النظام (يسار فعلي) -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center"
+                                FlowDirection="RightToLeft">
+                        <Image Source="pack://application:,,,/Assets/itqansoft_logo.png"
+                               Width="36" Height="36" Margin="0,0,10,0"
+                               RenderOptions.BitmapScalingMode="HighQuality"/>
+                        <StackPanel VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="it" Foreground="#1B4E9E" FontSize="15"
+                                           FontWeight="Black" FontFamily="Segoe UI"/>
+                                <TextBlock Text="QAN" Foreground="#F7941D" FontSize="15"
+                                           FontWeight="Black" FontFamily="Segoe UI"/>
+                                <TextBlock Text="Soft" Foreground="#94A3B8" FontSize="15"
+                                           FontWeight="Light" FontFamily="Segoe UI"/>
+                            </StackPanel>
+                            <TextBlock Text="نظام إدارة المطاعم" Foreground="#64748B"
+                                       FontSize="10" Margin="0,1,0,0"/>
                         </StackPanel>
-                        <Border Height="1" Margin="16,14,16,8">
-                            <Border.Background>
-                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                    <GradientStop Color="#F7941D" Offset="0"/>
-                                    <GradientStop Color="#1B4E9E" Offset="1"/>
-                                </LinearGradientBrush>
-                            </Border.Background>
-                        </Border>
                     </StackPanel>
 
-                    <!-- قائمة التنقل -->
-                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="10,0">
-                        <StackPanel x:Name="NavPanel">
-                            <TextBlock Text="الرئيسية" Foreground="#475569"
-                                       FontSize="10" Margin="14,6,14,3" FontWeight="SemiBold"/>
-                            <Button Tag="Dashboard" Click="Nav_Click" Style="{StaticResource NavBtn}">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="📊" FontSize="15" Width="24"/>
-                                    <TextBlock Text="لوحة التحكم" FontSize="13"/>
-                                </StackPanel>
-                            </Button>
-                            <Button Tag="Pos" Click="Nav_Click" Style="{StaticResource NavBtn}">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="🛒" FontSize="15" Width="24"/>
-                                    <TextBlock Text="نقطة البيع" FontSize="13"/>
-                                </StackPanel>
-                            </Button>
-                            <Button Tag="Kitchen" Click="Nav_Click" Style="{StaticResource NavBtn}">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="👨‍🍳" FontSize="15" Width="24"/>
-                                    <TextBlock Text="المطبخ" FontSize="13"/>
-                                </StackPanel>
-                            </Button>
+                    <!-- نص الترخيص (وسط) -->
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center"
+                                FlowDirection="RightToLeft">
+                        <TextBlock x:Name="TxtLicenseBadge"
+                                   Text="هذا النظام مرخص لـ —"
+                                   Foreground="#F7941D" FontSize="11" FontWeight="SemiBold"
+                                   HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="TxtRestaurantBadge"
+                                   Text="جارٍ التحميل..."
+                                   Foreground="White" FontSize="13" FontWeight="Bold"
+                                   HorizontalAlignment="Center"/>
+                    </StackPanel>
 
-                            <TextBlock Text="الإدارة" Foreground="#475569"
-                                       FontSize="10" Margin="14,10,14,3" FontWeight="SemiBold"/>
-                            <Button Tag="Menu" Click="Nav_Click" Style="{StaticResource NavBtn}">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="📋" FontSize="15" Width="24"/>
-                                    <TextBlock Text="القائمة" FontSize="13"/>
-                                </StackPanel>
-                            </Button>
-                            <Button Tag="Inventory" Click="Nav_Click" Style="{StaticResource NavBtn}">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="📦" FontSize="15" Width="24"/>
-                                    <TextBlock Text="المخزون" FontSize="13"/>
-                                </StackPanel>
-                            </Button>
-                            <Button Tag="Customers" Click="Nav_Click" Style="{StaticResource NavBtn}">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="👥" FontSize="15" Width="24"/>
-                                    <TextBlock Text="العملاء" FontSize="13"/>
-                                </StackPanel>
-                            </Button>
-                            <Button Tag="Suppliers" Click="Nav_Click" Style="{StaticResource NavBtn}">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="🏭" FontSize="15" Width="24"/>
-                                    <TextBlock Text="الموردون" FontSize="13"/>
-                                </StackPanel>
-                            </Button>
+                    <!-- معلومات المستخدم + أزرار النافذة (يمين فعلي) -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center"
+                                FlowDirection="LeftToRight">
 
-                            <TextBlock Text="المالية" Foreground="#475569"
-                                       FontSize="10" Margin="14,10,14,3" FontWeight="SemiBold"/>
-                            <Button Tag="Sales" Click="Nav_Click" Style="{StaticResource NavBtn}">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="🧾" FontSize="15" Width="24"/>
-                                    <TextBlock Text="المبيعات" FontSize="13"/>
-                                </StackPanel>
-                            </Button>
-                            <Button Tag="Reservations" Click="Nav_Click" Style="{StaticResource NavBtn}">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="📅" FontSize="15" Width="24"/>
-                                    <TextBlock Text="الحجوزات" FontSize="13"/>
-                                </StackPanel>
-                            </Button>
-                            <Button Tag="Reports" Click="Nav_Click" Style="{StaticResource NavBtn}">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="📈" FontSize="15" Width="24"/>
-                                    <TextBlock Text="التقارير" FontSize="13"/>
-                                </StackPanel>
-                            </Button>
-
-                            <TextBlock Text="النظام" Foreground="#475569"
-                                       FontSize="10" Margin="14,10,14,3" FontWeight="SemiBold"/>
-                            <Button Tag="Admin" Click="Nav_Click" Style="{StaticResource NavBtn}">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="⚙️" FontSize="15" Width="24"/>
-                                    <TextBlock Text="الإدارة والإعدادات" FontSize="13"/>
-                                </StackPanel>
-                            </Button>
-                        </StackPanel>
-                    </ScrollViewer>
-
-                    <!-- بطاقة المستخدم -->
-                    <Border Grid.Row="2" Margin="10,0,10,14">
-                        <Border Background="#243447" CornerRadius="10" Padding="12">
-                            <Border.BorderBrush>
-                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                    <GradientStop Color="#F7941D" Offset="0"/>
-                                    <GradientStop Color="#1B4E9E" Offset="1"/>
-                                </LinearGradientBrush>
-                            </Border.BorderBrush>
-                            <Border.BorderThickness>0,1,0,0</Border.BorderThickness>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <Border Grid.Column="0" Width="36" Height="36" CornerRadius="18" Margin="0,0,10,0">
+                        <!-- معلومات المستخدم -->
+                        <Border Background="#1E293B" CornerRadius="8" Padding="10,4" Margin="0,0,8,0">
+                            <StackPanel Orientation="Horizontal" FlowDirection="RightToLeft">
+                                <Border Width="28" Height="28" CornerRadius="14" Margin="0,0,8,0">
                                     <Border.Background>
                                         <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                                             <GradientStop Color="#F7941D" Offset="0"/>
@@ -210,83 +224,218 @@
                                         </LinearGradientBrush>
                                     </Border.Background>
                                     <TextBlock x:Name="TxtUserInitial" Text="م"
-                                               Foreground="White" FontSize="16" FontWeight="Bold"
+                                               Foreground="White" FontSize="13" FontWeight="Bold"
                                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
-                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <StackPanel VerticalAlignment="Center" Margin="0,0,0,0">
                                     <TextBlock x:Name="TxtUserName" Foreground="White"
-                                               FontSize="13" FontWeight="SemiBold"/>
-                                    <TextBlock x:Name="TxtUserRole" Foreground="#64748B" FontSize="11"/>
+                                               FontSize="12" FontWeight="SemiBold"/>
+                                    <TextBlock x:Name="TxtUserRole" Foreground="#64748B" FontSize="10"/>
                                 </StackPanel>
-                                <Button Grid.Column="2" Width="32" Height="32"
-                                        ToolTip="تسجيل الخروج" Cursor="Hand"
-                                        Click="BtnLogout_Click">
-                                    <Button.Template>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border x:Name="Bd" Background="Transparent"
-                                                    CornerRadius="6" Width="32" Height="32">
-                                                <TextBlock Text="⏻" Foreground="#64748B"
-                                                           FontSize="16"
-                                                           HorizontalAlignment="Center"
-                                                           VerticalAlignment="Center"/>
-                                            </Border>
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter TargetName="Bd" Property="Background" Value="#DC2626"/>
-                                                </Trigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </Button.Template>
-                                </Button>
-                            </Grid>
+                            </StackPanel>
                         </Border>
-                    </Border>
+
+                        <!-- الساعة -->
+                        <TextBlock x:Name="TxtClock" Foreground="#475569" FontSize="11"
+                                   VerticalAlignment="Center" Margin="0,0,6,0"
+                                   FlowDirection="LeftToRight"/>
+
+                        <!-- فاصل -->
+                        <Border Width="1" Height="20" Background="#2D3F55"
+                                VerticalAlignment="Center" Margin="0,0,4,0"/>
+
+                        <!-- زر التصغير -->
+                        <Button Width="34" Height="34" ToolTip="تصغير" Cursor="Hand"
+                                Click="BtnMinimize_Click" BorderThickness="0" Background="Transparent">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="Bd" Background="Transparent" CornerRadius="5">
+                                        <TextBlock x:Name="Ico" Text="─" Foreground="#64748B"
+                                                   FontSize="13" HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="#2D3F55"/>
+                                            <Setter TargetName="Ico" Property="Foreground" Value="White"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+
+                        <!-- زر التكبير -->
+                        <Button x:Name="BtnMaximizeToggle" Width="34" Height="34" Content="□"
+                                ToolTip="تكبير" Cursor="Hand" Click="BtnMaximize_Click"
+                                BorderThickness="0" Background="Transparent">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="Bd" Background="Transparent" CornerRadius="5">
+                                        <TextBlock x:Name="Ico" Text="{TemplateBinding Content}"
+                                                   Foreground="#64748B" FontSize="13"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="#2D3F55"/>
+                                            <Setter TargetName="Ico" Property="Foreground" Value="White"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+
+                        <!-- زر الإغلاق -->
+                        <Button Width="34" Height="34" ToolTip="إغلاق النظام" Cursor="Hand"
+                                Click="BtnClose_Click" BorderThickness="0" Background="Transparent">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="Bd" Background="Transparent" CornerRadius="5">
+                                        <TextBlock x:Name="Ico" Text="✕" Foreground="#64748B"
+                                                   FontSize="12" HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="#DC2626"/>
+                                            <Setter TargetName="Ico" Property="Foreground" Value="White"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </StackPanel>
                 </Grid>
             </Border>
 
-            <!-- ============ المنطقة الرئيسية (فاتحة) ============ -->
-            <Grid Grid.Column="1">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="50"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
+            <!-- ============================================================ -->
+            <!--   المنطقة الرئيسية: شريط جانبي | محتوى | شجرة التنقل        -->
+            <!-- ============================================================ -->
+            <Grid Grid.Row="1" FlowDirection="LeftToRight">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="170"/>  <!-- الشريط الجانبي الأيسر -->
+                    <ColumnDefinition Width="1"/>    <!-- فاصل -->
+                    <ColumnDefinition Width="*"/>    <!-- المحتوى الرئيسي -->
+                    <ColumnDefinition Width="1"/>    <!-- فاصل -->
+                    <ColumnDefinition Width="210"/>  <!-- شجرة التنقل الأيمن -->
+                </Grid.ColumnDefinitions>
 
-                <!-- شريط العنوان -->
-                <Border Grid.Row="0" Background="White"
-                        BorderBrush="{StaticResource BorderBrush2}" BorderThickness="0,0,0,1"
-                        MouseLeftButtonDown="TitleBar_MouseDown">
-                    <Grid Margin="16,0">
-                        <TextBlock x:Name="TxtPageTitle"
-                                   Foreground="{StaticResource TextPrimaryBrush}"
-                                   FontSize="16" FontWeight="Bold"
-                                   VerticalAlignment="Center" HorizontalAlignment="Right"/>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left"
-                                    VerticalAlignment="Center">
-                            <TextBlock x:Name="TxtClock"
-                                       Foreground="{StaticResource MutedBrush}"
-                                       FontSize="12" VerticalAlignment="Center"
-                                       Margin="0,0,16,0"/>
-                            <Button Width="30" Height="30" Content="─"
-                                    Background="Transparent" Foreground="{StaticResource MutedBrush}"
-                                    BorderThickness="0" Cursor="Hand" FontSize="16"
-                                    Click="BtnMinimize_Click"/>
-                            <Button x:Name="BtnMaximizeToggle" Width="30" Height="30" Content="□"
-                                    Background="Transparent" Foreground="{StaticResource MutedBrush}"
-                                    BorderThickness="0" Cursor="Hand" FontSize="14"
-                                    ToolTip="تكبير / استعادة" Click="BtnMaximize_Click"/>
-                            <Button Width="30" Height="30" Content="✕"
-                                    Background="Transparent" Foreground="{StaticResource MutedBrush}"
-                                    BorderThickness="0" Cursor="Hand" FontSize="14"
-                                    Click="BtnClose_Click"/>
-                        </StackPanel>
+                <!-- =========== الشريط الجانبي الأيسر (أزرار الدور) =========== -->
+                <Border Grid.Column="0" FlowDirection="RightToLeft">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="#0F172A" Offset="0"/>
+                            <GradientStop Color="#1A2332" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- أزرار القائمة (تُبنى ديناميكيًا) -->
+                        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto"
+                                      Margin="0,8,0,0">
+                            <StackPanel x:Name="LeftSidePanel"/>
+                        </ScrollViewer>
+
+                        <!-- زر تسجيل الخروج -->
+                        <Border Grid.Row="1" Margin="10,0,10,10">
+                            <Button x:Name="BtnLogoutSide" Style="{StaticResource SideBtn}"
+                                    Click="BtnLogout_Click" Height="42">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="⏻" FontSize="14" Width="22"/>
+                                    <TextBlock Text="تسجيل الخروج" FontSize="12"/>
+                                </StackPanel>
+                            </Button>
+                        </Border>
                     </Grid>
                 </Border>
 
-                <!-- محتوى الصفحة -->
-                <Frame x:Name="MainFrame" Grid.Row="1"
-                       NavigationUIVisibility="Hidden"
-                       Background="{StaticResource BgBrush}"/>
+                <!-- فاصل عمودي يسار -->
+                <Border Grid.Column="1" Background="#1E293B"/>
+
+                <!-- =========== المنطقة المركزية: عنوان الصفحة + محتوى =========== -->
+                <Grid Grid.Column="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="38"/>  <!-- شريط عنوان الصفحة -->
+                        <RowDefinition Height="*"/>   <!-- محتوى الصفحة -->
+                    </Grid.RowDefinitions>
+
+                    <!-- شريط عنوان الصفحة -->
+                    <Border Grid.Row="0" Background="White"
+                            BorderBrush="#E2E8F0" BorderThickness="0,0,0,1">
+                        <Grid Margin="16,0" FlowDirection="RightToLeft">
+                            <TextBlock x:Name="TxtPageTitle"
+                                       Foreground="#1E293B" FontSize="13" FontWeight="Bold"
+                                       VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                            <TextBlock x:Name="TxtPageBreadcrumb"
+                                       Foreground="#64748B" FontSize="11"
+                                       VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Frame المحتوى الرئيسي -->
+                    <Frame x:Name="MainFrame" Grid.Row="1"
+                           NavigationUIVisibility="Hidden"
+                           Background="{StaticResource BgBrush}"
+                           FlowDirection="RightToLeft"/>
+                </Grid>
+
+                <!-- فاصل عمودي يمين -->
+                <Border Grid.Column="3" Background="#E2E8F0"/>
+
+                <!-- =========== شجرة التنقل الأيمن =========== -->
+                <Border Grid.Column="4" Background="White" FlowDirection="RightToLeft">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- رأس الشجرة -->
+                        <Border Grid.Row="0" Background="#F8FAFC"
+                                BorderBrush="#E2E8F0" BorderThickness="0,0,0,1"
+                                Padding="12,8">
+                            <TextBlock Text="قائمة التنقل السريع"
+                                       Foreground="#475569" FontSize="11" FontWeight="SemiBold"/>
+                        </Border>
+
+                        <!-- شجرة التنقل -->
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled" Padding="4">
+                            <TreeView x:Name="NavTree" Background="Transparent"
+                                      BorderThickness="0" Padding="2"
+                                      SelectedItemChanged="NavTree_SelectedChanged"/>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
             </Grid>
+
+            <!-- ============================================================ -->
+            <!--   شريط الحالة السفلي                                         -->
+            <!-- ============================================================ -->
+            <Border Grid.Row="2" CornerRadius="0,0,14,14">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Color="#0A1628" Offset="0"/>
+                        <GradientStop Color="#162032" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+                <Grid Margin="14,0" FlowDirection="LeftToRight">
+                    <!-- يسار: معلومات المستخدم -->
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock x:Name="TxtStatusUser" Foreground="#475569" FontSize="10"/>
+                        <TextBlock Text=" • " Foreground="#2D3F55" FontSize="10"/>
+                        <TextBlock x:Name="TxtStatusBranch" Foreground="#475569" FontSize="10"/>
+                    </StackPanel>
+                    <!-- يمين: التاريخ والوقت -->
+                    <TextBlock x:Name="TxtStatusTime" Foreground="#334155" FontSize="10"
+                               HorizontalAlignment="Right" VerticalAlignment="Center"
+                               FlowDirection="LeftToRight"/>
+                </Grid>
+            </Border>
         </Grid>
     </Border>
 </Window>

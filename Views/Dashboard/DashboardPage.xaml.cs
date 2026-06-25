@@ -100,9 +100,10 @@ public partial class DashboardPage : Page
             // ===== آخر الطلبات =====
             var orders = await _db.QueryAsync<dynamic>(
                 @"SELECT TOP 20 o.order_id, o.customer_name, o.total_amount,
-                         o.payment_method, o.created_at, u.full_name AS served_by
+                         o.payment_method, o.created_at,
+                         ISNULL(u.full_name,'—') AS served_by
                   FROM orders o
-                  JOIN users u ON o.served_by = u.user_id
+                  LEFT JOIN users u ON o.served_by = u.user_id
                   ORDER BY o.created_at DESC");
 
             var list = orders.Select(o => new

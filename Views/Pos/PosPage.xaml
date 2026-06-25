@@ -4,6 +4,61 @@
       FlowDirection="RightToLeft"
       Background="{StaticResource BgBrush}">
 
+    <Page.Resources>
+        <Style x:Key="NumPadBtn" TargetType="Button">
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Background" Value="#334155"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}" CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#475569"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#F7941D"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SideBtn" TargetType="Button">
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="Background" Value="#334155"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#475569"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Page.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -11,74 +66,88 @@
         </Grid.RowDefinitions>
 
         <!-- ===== شريط الأدوات العلوي ===== -->
-        <Border Grid.Row="0" Background="White"
-                BorderBrush="{StaticResource BorderBrush2}" BorderThickness="0,0,0,1"
-                Padding="16,8">
+        <Border Grid.Row="0" Background="#0F172A" Padding="10,6">
             <Grid>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button x:Name="BtnLastInvoice" Content="🧾  آخر فاتورة"
-                            Style="{StaticResource GhostButton}" Height="36" FontSize="12"
-                            Margin="0,0,8,0" Click="BtnLastInvoice_Click"/>
-                    <Button x:Name="BtnSettings" Content="⚙️  إعدادات الكاشير"
-                            Style="{StaticResource GhostButton}" Height="36" FontSize="12"
-                            Margin="0,0,8,0" Click="BtnSettings_Click"/>
-                    <Button x:Name="BtnNewOrder" Content="➕  طلب جديد"
-                            Style="{StaticResource PrimaryButton}" Height="36" FontSize="12"
-                            Click="BtnClearCart_Click"/>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Background="#1e293b" CornerRadius="6" Padding="10,4" Margin="0,0,8,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📅 " Foreground="#64748b" FontSize="12" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="TxtClock" Foreground="White" FontSize="12" VerticalAlignment="Center"
+                                       Text="--:--:-- — --/--/----"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Background="#1e293b" CornerRadius="6" Padding="10,4" Margin="0,0,8,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="💰 " Foreground="#64748b" FontSize="12" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="TxtTodaySales" Text="مبيعات اليوم: جاري التحميل..."
+                                       Foreground="#F7941D" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Background="#1e293b" CornerRadius="6" Padding="10,4">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📋 " Foreground="#64748b" FontSize="12" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="TxtTodayOrders" Text="طلبات: ..."
+                                       Foreground="#22c55e" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
-                    <Border Background="{StaticResource SurfaceBrush}" CornerRadius="8" Padding="10,4" Margin="0,0,10,0">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="💰" FontSize="14" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                            <TextBlock x:Name="TxtTodaySales" Text="مبيعات اليوم: ..."
-                                       Foreground="{StaticResource TextPrimaryBrush}"
-                                       FontSize="12" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Border>
-                    <Border Background="{StaticResource SurfaceBrush}" CornerRadius="8" Padding="10,4">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="📋" FontSize="14" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                            <TextBlock x:Name="TxtTodayOrders" Text="طلبات اليوم: ..."
-                                       Foreground="{StaticResource TextPrimaryBrush}"
-                                       FontSize="12" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Border>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="🧾 آخر فاتورة" Style="{StaticResource SideBtn}"
+                            Margin="0,0,6,0" Click="BtnLastInvoice_Click"/>
+                    <Button Content="⚙️ إعدادات" Style="{StaticResource SideBtn}"
+                            Margin="0,0,6,0" Click="BtnSettings_Click"/>
+                    <Button Content="➕ طلب جديد" Height="32" FontSize="11" Padding="12,0"
+                            Background="#F7941D" Foreground="White" BorderThickness="0" Cursor="Hand"
+                            Click="BtnClearCart_Click">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                        CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="Bd" Property="Background" Value="#e0830a"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
                 </StackPanel>
             </Grid>
         </Border>
 
         <!-- ===== المحتوى الرئيسي ===== -->
-        <Grid Grid.Row="1" Margin="12">
+        <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="390"/>
+                <ColumnDefinition Width="355"/>
             </Grid.ColumnDefinitions>
 
-            <!-- ======= يسار: قائمة الأصناف ======= -->
-            <Grid Grid.Column="0" Margin="0,0,10,0">
+            <!-- ======= منطقة الأصناف الملونة ======= -->
+            <Grid Grid.Column="0" Background="#0F172A">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <!-- بحث -->
-                <Border Grid.Row="0" Background="White"
-                        BorderBrush="{StaticResource BorderBrush2}"
-                        BorderThickness="1" CornerRadius="10" Height="46"
-                        Margin="0,0,0,10">
-                    <Border.Effect>
-                        <DropShadowEffect BlurRadius="6" ShadowDepth="1" Opacity="0.05" Color="#000000"/>
-                    </Border.Effect>
-                    <Grid Margin="14,0">
+                <!-- بحث سريع -->
+                <Border Grid.Row="0" Background="#1e293b" Padding="10,6" BorderBrush="#334155" BorderThickness="0,0,0,1">
+                    <Grid>
                         <TextBlock x:Name="SearchPlaceholder"
                                    Text="🔍  ابحث باسم الصنف..."
-                                   Foreground="{StaticResource MutedBrush}"
-                                   VerticalAlignment="Center" FontSize="13"/>
+                                   Foreground="#64748b"
+                                   VerticalAlignment="Center" FontSize="13" Margin="4,0"/>
                         <TextBox x:Name="TxtSearch" Background="Transparent"
-                                 Foreground="{StaticResource TextPrimaryBrush}"
-                                 BorderThickness="0" FontSize="13" VerticalAlignment="Center"
-                                 CaretBrush="{StaticResource AccentBrush}"
+                                 Foreground="White" BorderThickness="0" FontSize="13"
+                                 VerticalAlignment="Center" CaretBrush="White" Padding="4,0"
                                  TextChanged="TxtSearch_Changed"/>
                     </Grid>
                 </Border>
@@ -87,246 +156,323 @@
                 <ScrollViewer Grid.Row="1"
                               HorizontalScrollBarVisibility="Auto"
                               VerticalScrollBarVisibility="Disabled"
-                              Margin="0,0,0,10">
-                    <StackPanel x:Name="CatPanel" Orientation="Horizontal"/>
+                              Background="#1A2332">
+                    <StackPanel x:Name="CatPanel" Orientation="Horizontal" Margin="8,5"/>
                 </ScrollViewer>
 
-                <!-- الأصناف -->
+                <!-- الأصناف الملونة -->
                 <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
-                    <WrapPanel x:Name="ItemsPanel" Margin="0,4"/>
+                    <WrapPanel x:Name="ItemsPanel" Margin="6"/>
                 </ScrollViewer>
             </Grid>
 
-            <!-- ======= يمين: السلة والدفع ======= -->
-            <Border Grid.Column="1" Background="White" CornerRadius="14"
-                    BorderBrush="{StaticResource BorderBrush2}" BorderThickness="1">
-                <Border.Effect>
-                    <DropShadowEffect BlurRadius="12" ShadowDepth="3" Opacity="0.08" Color="#000000"/>
-                </Border.Effect>
-                <Grid Margin="16">
+            <!-- ======= لوحة الطلب والدفع ======= -->
+            <Grid Grid.Column="1" Background="#1A2332">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- رقم الطاولة ونوع الطلب -->
+                <Border Grid.Row="0" Background="#243447" Padding="8,6" BorderBrush="#334155" BorderThickness="0,0,0,1">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="8"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="الطاولة" Foreground="#64748b" FontSize="10" Margin="0,0,0,2"/>
+                            <ComboBox x:Name="CmbTable" Height="28" FontSize="11"
+                                      Background="#1A2332" Foreground="White"
+                                      BorderBrush="#334155" BorderThickness="1"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="نوع الطلب" Foreground="#64748b" FontSize="10" Margin="0,0,0,2"/>
+                            <ComboBox x:Name="CmbOrderType" Height="28" FontSize="11"
+                                      Background="#1A2332" Foreground="White"
+                                      BorderBrush="#334155" BorderThickness="1">
+                                <ComboBoxItem Content="داخل المطعم" IsSelected="True"/>
+                                <ComboBoxItem Content="طلب خارجي"/>
+                                <ComboBoxItem Content="توصيل"/>
+                            </ComboBox>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- بيانات العميل -->
+                <Border Grid.Row="1" Background="#1e293b" Padding="8,5" BorderBrush="#334155" BorderThickness="0,0,0,1">
+                    <Grid>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="العميل" Foreground="#64748b" FontSize="10"/>
+                            <TextBlock x:Name="TxtCustomerInfo" Text="زبون عادي"
+                                       Foreground="White" FontSize="12" FontWeight="SemiBold"/>
+                        </StackPanel>
+                        <Button Content="👤 اختر" HorizontalAlignment="Left" VerticalAlignment="Center"
+                                Height="26" Padding="8,0" FontSize="10"
+                                Click="BtnSearchCustomer_Click" Cursor="Hand"
+                                Background="#334155" Foreground="White" BorderThickness="0">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                            CornerRadius="4" Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="#475569"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </Grid>
+                </Border>
+
+                <!-- رأس جدول الطلب -->
+                <Border Grid.Row="2" Background="#0F172A" Padding="8,5" BorderBrush="#334155" BorderThickness="0,0,0,1">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="44"/>
+                            <ColumnDefinition Width="70"/>
+                            <ColumnDefinition Width="30"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="الوصف" Foreground="#94A3B8" FontSize="11" FontWeight="SemiBold"/>
+                        <TextBlock Grid.Column="1" Text="الكمية" Foreground="#94A3B8" FontSize="11" FontWeight="SemiBold" TextAlignment="Center"/>
+                        <TextBlock Grid.Column="2" Text="السعر" Foreground="#94A3B8" FontSize="11" FontWeight="SemiBold" TextAlignment="Center"/>
+                    </Grid>
+                </Border>
+
+                <!-- عناصر السلة -->
+                <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto" Background="#0F172A">
+                    <StackPanel x:Name="CartPanel" Margin="0,1"/>
+                </ScrollViewer>
+
+                <!-- المجاميع -->
+                <Border Grid.Row="4" Background="#243447" Padding="8,6" BorderBrush="#334155" BorderThickness="0,1,0,1">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,3">
+                            <TextBlock Text="المجموع الفرعي" Foreground="#94A3B8" FontSize="11"/>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                <TextBlock x:Name="TxtSubtotal" Text="0.00" Foreground="White" FontSize="12" FontWeight="SemiBold"/>
+                                <TextBlock x:Name="TxtCurrencyLabel1" Text=" ريال" Foreground="#64748b" FontSize="10"/>
+                            </StackPanel>
+                        </Grid>
+                        <Grid Margin="0,0,0,3">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="الخصم" Foreground="#94A3B8" FontSize="11" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <Border Background="#1A2332" CornerRadius="4" BorderBrush="#334155" BorderThickness="1">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBox x:Name="TxtDiscountVal" Text="0" Width="40"
+                                                 Background="Transparent" Foreground="White"
+                                                 BorderThickness="0" FontSize="11" Padding="4,2"
+                                                 CaretBrush="White"
+                                                 TextChanged="TxtDiscount_Changed"/>
+                                        <ComboBox x:Name="CmbDiscountType" BorderThickness="0"
+                                                  Background="Transparent" Foreground="White" FontSize="10"
+                                                  SelectionChanged="TxtDiscount_Changed">
+                                            <ComboBoxItem Content="%" IsSelected="True"/>
+                                            <ComboBoxItem Content="مبلغ"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                <TextBlock x:Name="TxtDiscountAmt" Text="-0.00" Foreground="#ef4444" FontSize="12"/>
+                                <TextBlock x:Name="TxtCurrencyLabel2" Text=" ريال" Foreground="#64748b" FontSize="10"/>
+                            </StackPanel>
+                        </Grid>
+                        <Grid x:Name="TaxRow" Margin="0,0,0,3">
+                            <TextBlock x:Name="TxtTaxLabel" Text="الضريبة (15%)" Foreground="#94A3B8" FontSize="11"/>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                <TextBlock x:Name="TxtTax" Text="0.00" Foreground="#94A3B8" FontSize="11"/>
+                                <TextBlock x:Name="TxtCurrencyLabel3" Text=" ريال" Foreground="#64748b" FontSize="10"/>
+                            </StackPanel>
+                        </Grid>
+                        <Border Height="1" Background="#334155" Margin="0,2,0,4"/>
+                        <Grid>
+                            <TextBlock Text="الإجمالي" Foreground="White" FontSize="15" FontWeight="Bold"/>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                <TextBlock x:Name="TxtTotal" Text="0.00"
+                                           Foreground="#F7941D" FontSize="22" FontWeight="Bold"/>
+                                <TextBlock x:Name="TxtCurrencyLabel4" Text=" ريال"
+                                           Foreground="#F7941D" FontSize="13" FontWeight="Bold"
+                                           VerticalAlignment="Bottom" Margin="2,0,0,2"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- طريقة الدفع والمبلغ المستلم -->
+                <Border Grid.Row="5" Background="#1e293b" Padding="8,6" BorderBrush="#334155" BorderThickness="0,0,0,1">
+                    <StackPanel>
+                        <!-- طريقة الدفع -->
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                            <Border x:Name="BrdCash" Background="#F7941D"
+                                    CornerRadius="5" Padding="10,5" Margin="0,0,5,0" Cursor="Hand"
+                                    MouseLeftButtonUp="PayCash_Click">
+                                <TextBlock x:Name="TxtCash" Text="💵 كاش" Foreground="White" FontSize="11" FontWeight="SemiBold"/>
+                            </Border>
+                            <Border x:Name="BrdCard" Background="#1A2332"
+                                    CornerRadius="5" Padding="10,5" Margin="0,0,5,0" Cursor="Hand"
+                                    BorderBrush="#334155" BorderThickness="1"
+                                    MouseLeftButtonUp="PayCard_Click">
+                                <TextBlock x:Name="TxtCard" Text="💳 بطاقة" Foreground="#94A3B8" FontSize="11"/>
+                            </Border>
+                            <Border x:Name="BrdTransfer" Background="#1A2332"
+                                    CornerRadius="5" Padding="10,5" Cursor="Hand"
+                                    BorderBrush="#334155" BorderThickness="1"
+                                    MouseLeftButtonUp="PayTransfer_Click">
+                                <TextBlock x:Name="TxtTransfer" Text="📱 تحويل" Foreground="#94A3B8" FontSize="11"/>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- المبلغ المستلم والباقي -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="6"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="المبلغ المستلم" Foreground="#64748b" FontSize="10" Margin="0,0,0,2"/>
+                                <Border Background="#0F172A" CornerRadius="5" BorderBrush="#334155" BorderThickness="1">
+                                    <TextBox x:Name="TxtAmountPaid" Text="0"
+                                             Background="Transparent" Foreground="White"
+                                             BorderThickness="0" FontSize="14" FontWeight="Bold"
+                                             Padding="6,4" CaretBrush="White"
+                                             TextChanged="TxtAmountPaid_Changed"/>
+                                </Border>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="الباقي" Foreground="#64748b" FontSize="10" Margin="0,0,0,2"/>
+                                <Border Background="#0F172A" CornerRadius="5" BorderBrush="#334155" BorderThickness="1" Padding="6,5">
+                                    <TextBlock x:Name="TxtChange" Text="0.00"
+                                               Foreground="#22c55e" FontSize="14" FontWeight="Bold"/>
+                                </Border>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- ملاحظات -->
+                        <TextBlock Text="ملاحظات" Foreground="#64748b" FontSize="10" Margin="0,5,0,2"/>
+                        <Border Background="#0F172A" CornerRadius="5" BorderBrush="#334155" BorderThickness="1">
+                            <TextBox x:Name="TxtNotes" Background="Transparent"
+                                     Foreground="White" CaretBrush="White"
+                                     BorderThickness="0" FontSize="11"
+                                     Padding="6,4" Height="28"/>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <!-- لوحة الأرقام وأزرار الإتمام -->
+                <Grid Grid.Row="6" Background="#243447" Margin="0">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <!-- رأس السلة -->
-                    <Grid Grid.Row="0" Margin="0,0,0,10">
-                        <StackPanel>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="🛒" FontSize="18" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                                <TextBlock Text="الطلب الحالي"
-                                           Foreground="{StaticResource TextPrimaryBrush}"
-                                           FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </StackPanel>
-                        <Button Content="🗑  مسح" Style="{StaticResource DangerButton}"
-                                Height="32" FontSize="12" HorizontalAlignment="Left"
-                                Click="BtnClearCart_Click"/>
-                    </Grid>
-
-                    <!-- نوع الطلب والطاولة -->
-                    <Border Grid.Row="1" Background="{StaticResource SurfaceBrush}"
-                            CornerRadius="8" Padding="10,8" Margin="0,0,0,8">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="8"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="الطاولة" Foreground="{StaticResource MutedBrush}" FontSize="11" Margin="0,0,0,3"/>
-                                <ComboBox x:Name="CmbTable" Style="{StaticResource DarkCombo}"
-                                          Height="32" FontSize="12"/>
-                            </StackPanel>
-                            <StackPanel Grid.Column="2">
-                                <TextBlock Text="نوع الطلب" Foreground="{StaticResource MutedBrush}" FontSize="11" Margin="0,0,0,3"/>
-                                <ComboBox x:Name="CmbOrderType" Style="{StaticResource DarkCombo}"
-                                          Height="32" FontSize="12">
-                                    <ComboBoxItem Content="داخل المطعم" IsSelected="True"/>
-                                    <ComboBoxItem Content="طلب خارجي"/>
-                                    <ComboBoxItem Content="توصيل"/>
-                                </ComboBox>
-                            </StackPanel>
-                        </Grid>
-                    </Border>
-
-                    <!-- بيانات العميل -->
-                    <Border Grid.Row="2" Background="{StaticResource SurfaceBrush}"
-                            CornerRadius="8" Padding="10,8" Margin="0,0,0,8">
-                        <Grid>
-                            <StackPanel>
-                                <TextBlock Text="العميل" Foreground="{StaticResource MutedBrush}" FontSize="11" Margin="0,0,0,3"/>
-                                <TextBlock x:Name="TxtCustomerInfo" Text="زبون عادي"
-                                           Foreground="{StaticResource TextPrimaryBrush}"
-                                           FontSize="13" FontWeight="SemiBold"/>
-                            </StackPanel>
-                            <Button Content="👤  اختر" Style="{StaticResource GhostButton}"
-                                    Height="28" FontSize="11" HorizontalAlignment="Left"
-                                    Click="BtnSearchCustomer_Click"/>
-                        </Grid>
-                    </Border>
-
-                    <!-- عناصر السلة -->
-                    <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto" Margin="0,0,0,8">
-                        <StackPanel x:Name="CartPanel"/>
-                    </ScrollViewer>
-
-                    <!-- المجاميع -->
-                    <Border Grid.Row="4" Background="{StaticResource SurfaceBrush}"
-                            CornerRadius="8" Padding="12,10" Margin="0,0,0,8">
-                        <StackPanel>
-                            <Grid Margin="0,0,0,4">
-                                <TextBlock Text="المجموع الفرعي" Foreground="{StaticResource MutedBrush}" FontSize="12"/>
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                    <TextBlock x:Name="TxtSubtotal" Text="0.00"
-                                               Foreground="{StaticResource TextPrimaryBrush}"
-                                               FontSize="12" FontWeight="SemiBold"/>
-                                    <TextBlock x:Name="TxtCurrencyLabel1" Text=" ريال"
-                                               Foreground="{StaticResource MutedBrush}" FontSize="11"/>
-                                </StackPanel>
-                            </Grid>
-                            <Grid Margin="0,0,0,4">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="الخصم" Foreground="{StaticResource MutedBrush}" FontSize="12" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                    <Border Background="White" CornerRadius="4" BorderBrush="{StaticResource BorderBrush2}" BorderThickness="1">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBox x:Name="TxtDiscountVal" Text="0" Width="50"
-                                                     Background="Transparent" Foreground="{StaticResource TextPrimaryBrush}"
-                                                     BorderThickness="0" FontSize="12" Padding="4,2"
-                                                     TextChanged="TxtDiscount_Changed"/>
-                                            <ComboBox x:Name="CmbDiscountType" BorderThickness="0"
-                                                      Background="Transparent" FontSize="11"
-                                                      SelectionChanged="TxtDiscount_Changed">
-                                                <ComboBoxItem Content="%" IsSelected="True"/>
-                                                <ComboBoxItem Content="مبلغ"/>
-                                            </ComboBox>
-                                        </StackPanel>
+                    <!-- لوحة الأرقام -->
+                    <UniformGrid Grid.Row="0" Rows="4" Columns="3" Margin="5,5,5,2">
+                        <Button Content="7" Style="{StaticResource NumPadBtn}" Click="NumPad_Click" Tag="7"/>
+                        <Button Content="8" Style="{StaticResource NumPadBtn}" Click="NumPad_Click" Tag="8"/>
+                        <Button Content="9" Style="{StaticResource NumPadBtn}" Click="NumPad_Click" Tag="9"/>
+                        <Button Content="4" Style="{StaticResource NumPadBtn}" Click="NumPad_Click" Tag="4"/>
+                        <Button Content="5" Style="{StaticResource NumPadBtn}" Click="NumPad_Click" Tag="5"/>
+                        <Button Content="6" Style="{StaticResource NumPadBtn}" Click="NumPad_Click" Tag="6"/>
+                        <Button Content="1" Style="{StaticResource NumPadBtn}" Click="NumPad_Click" Tag="1"/>
+                        <Button Content="2" Style="{StaticResource NumPadBtn}" Click="NumPad_Click" Tag="2"/>
+                        <Button Content="3" Style="{StaticResource NumPadBtn}" Click="NumPad_Click" Tag="3"/>
+                        <Button Content="." Style="{StaticResource NumPadBtn}" Click="NumPad_Click" Tag="."/>
+                        <Button Content="0" Style="{StaticResource NumPadBtn}" Click="NumPad_Click" Tag="0"/>
+                        <Button Content="⌫" Height="38" FontSize="18" Margin="2"
+                                Background="#ef4444" Foreground="White" BorderThickness="0" Cursor="Hand"
+                                Click="NumPadClear_Click">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="Bd" Background="{TemplateBinding Background}" CornerRadius="6">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                    <TextBlock x:Name="TxtDiscountAmt" Text="-0.00"
-                                               Foreground="{StaticResource DangerBrush}"
-                                               FontSize="12"/>
-                                    <TextBlock x:Name="TxtCurrencyLabel2" Text=" ريال"
-                                               Foreground="{StaticResource MutedBrush}" FontSize="11"/>
-                                </StackPanel>
-                            </Grid>
-                            <Grid Margin="0,0,0,4" x:Name="TaxRow">
-                                <TextBlock x:Name="TxtTaxLabel" Text="الضريبة (15%)" Foreground="{StaticResource MutedBrush}" FontSize="12"/>
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                    <TextBlock x:Name="TxtTax" Text="0.00"
-                                               Foreground="{StaticResource MutedBrush}" FontSize="12"/>
-                                    <TextBlock x:Name="TxtCurrencyLabel3" Text=" ريال"
-                                               Foreground="{StaticResource MutedBrush}" FontSize="11"/>
-                                </StackPanel>
-                            </Grid>
-                            <Border Height="1" Background="{StaticResource BorderBrush2}" Margin="0,6,0,6"/>
-                            <Grid>
-                                <TextBlock Text="الإجمالي" Foreground="{StaticResource TextPrimaryBrush}"
-                                           FontSize="15" FontWeight="Bold"/>
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
-                                    <TextBlock x:Name="TxtTotal" Text="0.00"
-                                               Foreground="{StaticResource AccentBrush}"
-                                               FontSize="20" FontWeight="Bold"/>
-                                    <TextBlock x:Name="TxtCurrencyLabel4" Text=" ريال"
-                                               Foreground="{StaticResource AccentBrush}"
-                                               FontSize="14" FontWeight="Bold" VerticalAlignment="Bottom" Margin="2,0,0,2"/>
-                                </StackPanel>
-                            </Grid>
-                        </StackPanel>
-                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="#b91c1c"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </UniformGrid>
 
-                    <!-- طريقة الدفع والمبلغ المستلم -->
-                    <Border Grid.Row="5" Background="{StaticResource SurfaceBrush}"
-                            CornerRadius="8" Padding="12,10" Margin="0,0,0,8">
-                        <StackPanel>
-                            <!-- طريقة الدفع -->
-                            <TextBlock Text="طريقة الدفع" Foreground="{StaticResource MutedBrush}" FontSize="11" Margin="0,0,0,6"/>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                <Border x:Name="BrdCash" Background="{StaticResource AccentBrush}"
-                                        CornerRadius="6" Padding="12,6" Margin="0,0,6,0" Cursor="Hand"
-                                        MouseLeftButtonUp="PayCash_Click">
-                                    <TextBlock Text="💵 كاش" Foreground="White" FontSize="12" FontWeight="SemiBold"/>
-                                </Border>
-                                <Border x:Name="BrdCard" Background="White"
-                                        CornerRadius="6" Padding="12,6" Margin="0,0,6,0" Cursor="Hand"
-                                        BorderBrush="{StaticResource BorderBrush2}" BorderThickness="1"
-                                        MouseLeftButtonUp="PayCard_Click">
-                                    <TextBlock Text="💳 بطاقة" Foreground="{StaticResource TextPrimaryBrush}" FontSize="12"/>
-                                </Border>
-                                <Border x:Name="BrdTransfer" Background="White"
-                                        CornerRadius="6" Padding="12,6" Cursor="Hand"
-                                        BorderBrush="{StaticResource BorderBrush2}" BorderThickness="1"
-                                        MouseLeftButtonUp="PayTransfer_Click">
-                                    <TextBlock Text="📱 تحويل" Foreground="{StaticResource TextPrimaryBrush}" FontSize="12"/>
-                                </Border>
-                            </StackPanel>
-
-                            <!-- المبلغ المستلم والباقي -->
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="8"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Text="المبلغ المستلم" Foreground="{StaticResource MutedBrush}" FontSize="11" Margin="0,0,0,3"/>
-                                    <Border Background="White" CornerRadius="6"
-                                            BorderBrush="{StaticResource BorderBrush2}" BorderThickness="1">
-                                        <TextBox x:Name="TxtAmountPaid" Text="0"
-                                                 Background="Transparent"
-                                                 Foreground="{StaticResource TextPrimaryBrush}"
-                                                 BorderThickness="0" FontSize="14" FontWeight="Bold"
-                                                 Padding="8,6" TextChanged="TxtAmountPaid_Changed"/>
-                                    </Border>
-                                </StackPanel>
-                                <StackPanel Grid.Column="2">
-                                    <TextBlock Text="الباقي" Foreground="{StaticResource MutedBrush}" FontSize="11" Margin="0,0,0,3"/>
-                                    <Border Background="White" CornerRadius="6"
-                                            BorderBrush="{StaticResource BorderBrush2}" BorderThickness="1"
-                                            Padding="8,6">
-                                        <TextBlock x:Name="TxtChange" Text="0.00"
-                                                   Foreground="{StaticResource SuccessBrush}"
-                                                   FontSize="14" FontWeight="Bold"/>
-                                    </Border>
-                                </StackPanel>
-                            </Grid>
-
-                            <!-- ملاحظات -->
-                            <TextBlock Text="ملاحظات" Foreground="{StaticResource MutedBrush}" FontSize="11" Margin="0,8,0,3"/>
-                            <Border Background="White" CornerRadius="6"
-                                    BorderBrush="{StaticResource BorderBrush2}" BorderThickness="1">
-                                <TextBox x:Name="TxtNotes" Background="Transparent"
-                                         Foreground="{StaticResource TextPrimaryBrush}"
-                                         BorderThickness="0" FontSize="12"
-                                         Padding="8,6" Height="36"/>
-                            </Border>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- زر الإتمام -->
-                    <Grid Grid.Row="6">
+                    <!-- أزرار الإتمام والمسح والطباعة -->
+                    <Grid Grid.Row="1" Margin="5,2,5,5">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="8"/>
-                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="4"/>
+                            <ColumnDefinition Width="42"/>
+                            <ColumnDefinition Width="4"/>
+                            <ColumnDefinition Width="42"/>
                         </Grid.ColumnDefinitions>
                         <Button Grid.Column="0" x:Name="BtnConfirm"
-                                Content="✅  إتمام الطلب والطباعة"
-                                Style="{StaticResource PrimaryButton}" Height="48" FontSize="15"
-                                Click="BtnConfirmOrder_Click"/>
-                        <Button Grid.Column="2" Content="🖨"
-                                Style="{StaticResource BlueButton}" Height="48"
-                                Width="48" FontSize="20" ToolTip="إعادة طباعة آخر فاتورة"
-                                Click="BtnReprintLast_Click"/>
+                                Content="✅ إتمام الطلب والطباعة"
+                                Height="44" FontSize="13" FontWeight="Bold"
+                                Background="#16a34a" Foreground="White" BorderThickness="0"
+                                Cursor="Hand" Click="BtnConfirmOrder_Click">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="Bd" Background="{TemplateBinding Background}" CornerRadius="8">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="#15803d"/>
+                                        </Trigger>
+                                        <Trigger Property="IsEnabled" Value="False">
+                                            <Setter Property="Opacity" Value="0.5"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                        <Button Grid.Column="2" Content="🗑" Height="44" FontSize="18"
+                                Background="#ef4444" Foreground="White" BorderThickness="0" Cursor="Hand"
+                                Click="BtnClearCart_Click" ToolTip="مسح الطلب">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="Bd" Background="{TemplateBinding Background}" CornerRadius="8">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="#b91c1c"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                        <Button Grid.Column="4" Content="🖨" Height="44" FontSize="18"
+                                Background="#1B4E9E" Foreground="White" BorderThickness="0" Cursor="Hand"
+                                Click="BtnReprintLast_Click" ToolTip="إعادة طباعة آخر فاتورة">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="Bd" Background="{TemplateBinding Background}" CornerRadius="8">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="#154090"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
                     </Grid>
                 </Grid>
-            </Border>
+            </Grid>
         </Grid>
     </Grid>
 </Page>

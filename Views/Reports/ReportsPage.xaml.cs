@@ -33,16 +33,23 @@ public partial class ReportsPage : Page
 
     private async Task LoadCurrentTab()
     {
-        var from = DpFrom.SelectedDate ?? DateTime.Today.AddDays(-30);
-        var to   = DpTo.SelectedDate   ?? DateTime.Today;
-
-        HideAll();
-        switch (_activeTab)
+        try
         {
-            case "Sales":     await LoadSales(from, to);     GridSales.Visibility    = Visibility.Visible; break;
-            case "TopItems":  await LoadTopItems(from, to);  GridTopItems.Visibility = Visibility.Visible; break;
-            case "Payment":   await LoadPayment(from, to);   GridPayment.Visibility  = Visibility.Visible; break;
-            case "Staff":     await LoadStaff(from, to);     GridStaff.Visibility    = Visibility.Visible; break;
+            var from = DpFrom.SelectedDate ?? DateTime.Today.AddDays(-30);
+            var to   = DpTo.SelectedDate   ?? DateTime.Today;
+
+            HideAll();
+            switch (_activeTab)
+            {
+                case "Sales":     await LoadSales(from, to);     GridSales.Visibility    = Visibility.Visible; break;
+                case "TopItems":  await LoadTopItems(from, to);  GridTopItems.Visibility = Visibility.Visible; break;
+                case "Payment":   await LoadPayment(from, to);   GridPayment.Visibility  = Visibility.Visible; break;
+                case "Staff":     await LoadStaff(from, to);     GridStaff.Visibility    = Visibility.Visible; break;
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"خطأ في تحميل التقارير:\n{ex.Message}", "خطأ", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 

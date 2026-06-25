@@ -18,23 +18,30 @@ public partial class KitchenPage : Page
 
     private async Task LoadAsync()
     {
-        var orders = (await _db.QueryAsync<dynamic>(
-            @"SELECT ko.kitchen_order_id, ko.order_id, ko.table_number,
-                     ko.customer_name, ko.status, ko.notes, ko.created_at
-              FROM kitchen_orders ko
-              WHERE ko.status NOT IN ('Served','Cancelled')
-              ORDER BY ko.created_at ASC")).ToList();
-
-        TxtPending.Text = orders.Count.ToString();
-        OrdersPanel.Children.Clear();
-
-        foreach (var order in orders)
+        try
         {
-            var items = await _db.QueryAsync<dynamic>(
-                "SELECT item_name, quantity FROM kitchen_order_items WHERE kitchen_order_id=@id",
-                new { id = (int)order.kitchen_order_id });
+            var orders = (await _db.QueryAsync<dynamic>(
+                @"SELECT ko.kitchen_order_id, ko.order_id, ko.table_number,
+                         ko.customer_name, ko.status, ko.notes, ko.created_at
+                  FROM kitchen_orders ko
+                  WHERE ko.status NOT IN ('Served','Cancelled')
+                  ORDER BY ko.created_at ASC")).ToList();
 
-            OrdersPanel.Children.Add(MakeOrderCard(order, items));
+            TxtPending.Text = orders.Count.ToString();
+            OrdersPanel.Children.Clear();
+
+            foreach (var order in orders)
+            {
+                var items = await _db.QueryAsync<dynamic>(
+                    "SELECT item_name, quantity FROM kitchen_order_items WHERE kitchen_order_id=@id",
+                    new { id = (int)order.kitchen_order_id });
+
+                OrdersPanel.Children.Add(MakeOrderCard(order, items));
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"خطأ في تحميل طلبات المطبخ:\n{ex.Message}", "خطأ", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 

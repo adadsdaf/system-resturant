@@ -17,26 +17,34 @@ public partial class MenuPage : Page
 
     private async Task LoadAsync()
     {
-        _categories = (await _db.QueryAsync<dynamic>(
-            "SELECT category_id, category_name FROM menu_categories ORDER BY sort_order, category_name")).ToList();
-
-        var items = await _db.QueryAsync<dynamic>(
-            @"SELECT mi.item_id, mi.item_name, mc.category_name, mc.category_id,
-                     mi.price, mi.cost_price, mi.description, mi.is_available
-              FROM menu_items mi
-              JOIN menu_categories mc ON mi.category_id = mc.category_id
-              ORDER BY mc.category_name, mi.item_name");
-
-        var currency = await _db.ExecuteScalarAsync<string>("SELECT value FROM settings WHERE setting_key='currency'") ?? "ريال";
-
-        GridItems.ItemsSource = items.Select(i => new
+        try
         {
-            i.item_id, i.item_name, i.category_name, i.category_id,
-            i.price, i.cost_price, i.description, i.is_available,
-            price_fmt  = $"{i.price:N2} {currency}",
-            cost_fmt   = $"{i.cost_price:N2} {currency}",
-            status_txt = ((bool)i.is_available) ? "✅ متاح" : "⛔ موقوف"
-        }).ToList();
+            _categories = (await _db.QueryAsync<dynamic>(
+                "SELECT category_id, category_name FROM menu_categories ORDER BY sort_order, category_name")).ToList();
+
+            var items = await _db.QueryAsync<dynamic>(
+                @"SELECT mi.item_id, mi.item_name, mc.category_name, mc.category_id,
+                         mi.price, mi.cost_price, mi.description, mi.is_available
+                  FROM menu_items mi
+                  JOIN menu_categories mc ON mi.category_id = mc.category_id
+                  ORDER BY mc.category_name, mi.item_name");
+
+            var currency = await _db.ExecuteScalarAsync<string>(
+                "SELECT value FROM settings WHERE setting_key='currency'") ?? "ريال";
+
+            GridItems.ItemsSource = items.Select(i => new
+            {
+                i.item_id, i.item_name, i.category_name, i.category_id,
+                i.price, i.cost_price, i.description, i.is_available,
+                price_fmt  = $"{i.price:N2} {currency}",
+                cost_fmt   = $"{i.cost_price:N2} {currency}",
+                status_txt = ((bool)i.is_available) ? "✅ متاح" : "⛔ موقوف"
+            }).ToList();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"خطأ في تحميل قائمة الأصناف:\n{ex.Message}", "خطأ", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
     }
 
     private void GridItems_SelectionChanged(object s, SelectionChangedEventArgs e) { }

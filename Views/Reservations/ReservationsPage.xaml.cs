@@ -17,33 +17,40 @@ public partial class ReservationsPage : Page
 
     private async Task LoadAsync()
     {
-        var date = DpFilter.SelectedDate ?? DateTime.Today;
-        var rows = await _db.QueryAsync<dynamic>(
-            @"SELECT r.reservation_id, r.customer_name, r.phone, r.reservation_date,
-                     r.reservation_time, r.party_size, r.table_id, r.status, r.special_requests,
-                     t.table_number
-              FROM reservations r
-              LEFT JOIN tables t ON r.table_id = t.table_id
-              WHERE r.reservation_date = @date
-              ORDER BY r.reservation_time",
-            new { date });
-
-        GridRes.ItemsSource = rows.Select(r => new
+        try
         {
-            r.reservation_id, r.customer_name, r.phone, r.party_size, r.status,
-            date_fmt   = ((DateTime)r.reservation_date).ToString("dd/MM/yyyy"),
-            time_fmt   = r.reservation_time?.ToString() ?? "",
-            table_num  = r.table_number != null ? $"طاولة {r.table_number}" : "—",
-            status_txt = ((string)r.status) switch
+            var date = DpFilter.SelectedDate ?? DateTime.Today;
+            var rows = await _db.QueryAsync<dynamic>(
+                @"SELECT r.reservation_id, r.customer_name, r.phone, r.reservation_date,
+                         r.reservation_time, r.party_size, r.table_id, r.status, r.special_requests,
+                         t.table_number
+                  FROM reservations r
+                  LEFT JOIN tables t ON r.table_id = t.table_id
+                  WHERE r.reservation_date = @date
+                  ORDER BY r.reservation_time",
+                new { date });
+
+            GridRes.ItemsSource = rows.Select(r => new
             {
-                "Pending"    => "⏳ انتظار",
-                "Confirmed"  => "✅ مؤكد",
-                "Cancelled"  => "❌ ملغي",
-                "No Show"    => "🚫 لم يحضر",
-                "Completed"  => "✔️ مكتمل",
-                _            => r.status
-            }
-        }).ToList();
+                r.reservation_id, r.customer_name, r.phone, r.party_size, r.status,
+                date_fmt   = ((DateTime)r.reservation_date).ToString("dd/MM/yyyy"),
+                time_fmt   = r.reservation_time?.ToString() ?? "",
+                table_num  = r.table_number != null ? $"طاولة {r.table_number}" : "—",
+                status_txt = ((string)r.status) switch
+                {
+                    "Pending"    => "⏳ انتظار",
+                    "Confirmed"  => "✅ مؤكد",
+                    "Cancelled"  => "❌ ملغي",
+                    "No Show"    => "🚫 لم يحضر",
+                    "Completed"  => "✔️ مكتمل",
+                    _            => r.status
+                }
+            }).ToList();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"خطأ في تحميل الحجوزات:\n{ex.Message}", "خطأ", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
     }
 
     private void BtnAdd_Click(object s, RoutedEventArgs e)

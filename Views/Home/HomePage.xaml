@@ -1,0 +1,127 @@
+<Page x:Class="RestaurantMS.Desktop.Views.Home.HomePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      FlowDirection="RightToLeft"
+      Background="#0F172A">
+
+    <Grid>
+        <!-- خلفية متدرجة مع تأثير موجة -->
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#0F172A" Offset="0"/>
+                <GradientStop Color="#1A2D4A" Offset="0.5"/>
+                <GradientStop Color="#0F172A" Offset="1"/>
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <!-- دوائر زخرفية للموجة -->
+        <Ellipse Width="700" Height="700" HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                 Margin="-200,0,0,200" Opacity="0.04">
+            <Ellipse.Fill>
+                <SolidColorBrush Color="#1B4E9E"/>
+            </Ellipse.Fill>
+        </Ellipse>
+        <Ellipse Width="500" Height="500" HorizontalAlignment="Right" VerticalAlignment="Top"
+                 Margin="0,-100,-150,0" Opacity="0.06">
+            <Ellipse.Fill>
+                <SolidColorBrush Color="#F7941D"/>
+            </Ellipse.Fill>
+        </Ellipse>
+        <Ellipse Width="400" Height="400" HorizontalAlignment="Center" VerticalAlignment="Center"
+                 Margin="200,0,0,200" Opacity="0.03">
+            <Ellipse.Fill>
+                <SolidColorBrush Color="#FFFFFF"/>
+            </Ellipse.Fill>
+        </Ellipse>
+
+        <!-- المحتوى الرئيسي -->
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="60,0">
+
+            <!-- الشعار -->
+            <Border HorizontalAlignment="Center" Margin="0,0,0,24">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="40" ShadowDepth="0" Opacity="0.5" Color="#F7941D"/>
+                </Border.Effect>
+                <Image Source="pack://application:,,,/Assets/itqansoft_logo.png"
+                       Width="130" Height="130"
+                       RenderOptions.BitmapScalingMode="HighQuality"/>
+            </Border>
+
+            <!-- اسم الشركة -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,8">
+                <TextBlock Text="it" Foreground="#1B4E9E" FontSize="32" FontWeight="Black"
+                           FontFamily="Segoe UI"/>
+                <TextBlock Text="QAN" Foreground="#F7941D" FontSize="32" FontWeight="Black"
+                           FontFamily="Segoe UI"/>
+                <TextBlock Text="S" Foreground="White" FontSize="32" FontWeight="Black"
+                           FontFamily="Segoe UI"/>
+                <TextBlock Text="oft" Foreground="#94A3B8" FontSize="32" FontWeight="Light"
+                           FontFamily="Segoe UI"/>
+            </StackPanel>
+
+            <!-- خط فاصل متدرج -->
+            <Border Height="2" Width="320" HorizontalAlignment="Center" Margin="0,4,0,16" CornerRadius="1">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Color="#F7941D" Offset="0"/>
+                        <GradientStop Color="#1B4E9E" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+            </Border>
+
+            <!-- اسم النظام -->
+            <TextBlock x:Name="TxtSystemTitle"
+                       Text="نظام إدارة المطاعم"
+                       Foreground="White" FontSize="22" FontWeight="SemiBold"
+                       HorizontalAlignment="Center" Margin="0,0,0,6"/>
+
+            <!-- العبارة التسويقية -->
+            <TextBlock Text="Enterprise Resource Planning Solutions"
+                       Foreground="#64748B" FontSize="13" FontFamily="Segoe UI"
+                       HorizontalAlignment="Center" Margin="0,0,0,32"
+                       FlowDirection="LeftToRight"/>
+
+            <!-- بطاقة رسالة الترحيب -->
+            <Border Background="#1E293B" CornerRadius="14" Padding="32,20"
+                    HorizontalAlignment="Center" MinWidth="400">
+                <Border.BorderBrush>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Color="#F7941D" Offset="0"/>
+                        <GradientStop Color="#1B4E9E" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.BorderBrush>
+                <Border.BorderThickness>0,2,0,0</Border.BorderThickness>
+                <StackPanel>
+                    <TextBlock x:Name="TxtWelcome"
+                               Text="مرحباً بك في النظام"
+                               Foreground="#F7941D" FontSize="16" FontWeight="Bold"
+                               HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                    <TextBlock x:Name="TxtUserInfo"
+                               Foreground="#94A3B8" FontSize="13"
+                               HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                    <TextBlock x:Name="TxtLicenseInfo"
+                               Foreground="#64748B" FontSize="11"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+
+            <!-- معلومات التواصل -->
+            <StackPanel HorizontalAlignment="Center" Margin="0,28,0,0">
+                <TextBlock Text="التواصل مع اتقان سوفت"
+                           Foreground="#475569" FontSize="12"
+                           HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <TextBlock Text="✉ " Foreground="#475569" FontSize="11"/>
+                    <TextBlock Text="info@itqansoft.com" Foreground="#475569" FontSize="11"
+                               FlowDirection="LeftToRight"/>
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+
+        <!-- تاريخ ووقت في الزاوية -->
+        <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,20">
+            <TextBlock x:Name="TxtDateTime" Foreground="#334155" FontSize="11"
+                       HorizontalAlignment="Center"/>
+        </StackPanel>
+    </Grid>
+</Page>

@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace RestaurantMS.Desktop.Views.Pos;
 
@@ -20,13 +21,40 @@ public partial class PosPage : Page
     private string _payMethod = "Cash";
     private int? _lastOrderId;
     private ReceiptSettings _receiptSettings = new();
+    private readonly DispatcherTimer _clock = new();
+
+    // ألوان الأصناف الملونة (كما في الصورة)
+    private static readonly string[] ItemColors =
+    {
+        "#D4AF37", // ذهبي
+        "#5DBB63", // أخضر
+        "#A8D5A2", // أخضر فاتح
+        "#F0C040", // أصفر
+        "#7BC67E", // أخضر متوسط
+        "#C8E6C9", // أخضر شاحب
+        "#FFD54F", // أصفر ذهبي
+        "#81C784", // أخضر
+        "#B5D5A5", // أخضر زيتوني
+    };
 
     public PosPage()
     {
         InitializeComponent();
         Loaded += async (_, _) => await LoadAsync();
+
+        // ساعة حية في صفحة الكاشير
+        _clock.Interval = TimeSpan.FromSeconds(1);
+        _clock.Tick    += (_, _) => TxtClock.Text = DateTime.Now.ToString("HH:mm:ss — dd/MM/yyyy");
+        _clock.Start();
+        TxtClock.Text = DateTime.Now.ToString("HH:mm:ss — dd/MM/yyyy");
+
+        // إيقاف الساعة عند مغادرة الصفحة
+        Unloaded += (_, _) => _clock.Stop();
     }
 
+    // ===================================================================
+    //  تحميل البيانات
+    // ===================================================================
     private async Task LoadAsync()
     {
         try
@@ -39,111 +67,142 @@ public partial class PosPage : Page
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"خطأ في تحميل البيانات: {ex.Message}\n\nتأكد من اتصال قاعدة البيانات.", "خطأ التحميل");
+            MessageBox.Show(
+                $"خطأ في تحميل بيانات الكاشير:\n{ex.Message}\n\nتأكد من اتصال قاعدة البيانات.",
+                "خطأ التحميل", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 
     private async Task LoadSettings()
     {
-        _currency   = await _db.ExecuteScalarAsync<string>("SELECT value FROM settings WHERE setting_key='currency'") ?? "ريال";
-        var taxEn   = await _db.ExecuteScalarAsync<string>("SELECT value FROM settings WHERE setting_key='tax_enabled'") ?? "0";
-        var taxR    = await _db.ExecuteScalarAsync<string>("SELECT value FROM settings WHERE setting_key='tax_rate'") ?? "0";
-        _taxEnabled = taxEn == "1";
-        _taxRate    = double.TryParse(taxR, out var r) ? r : 0;
+        try
+        {
+            _currency   = await _db.ExecuteScalarAsync<string>(
+                              "SELECT value FROM settings WHERE setting_key='currency'") ?? "ريال";
+            var taxEn   = await _db.ExecuteScalarAsync<string>(
+                              "SELECT value FROM settings WHERE setting_key='tax_enabled'") ?? "0";
+            var taxR    = await _db.ExecuteScalarAsync<string>(
+                              "SELECT value FROM settings WHERE setting_key='tax_rate'") ?? "0";
+            _taxEnabled = taxEn == "1";
+            _taxRate    = double.TryParse(taxR, out var r) ? r : 0;
 
-        TxtCurrencyLabel1.Text = $" {_currency}";
-        TxtCurrencyLabel2.Text = $" {_currency}";
-        TxtCurrencyLabel3.Text = $" {_currency}";
-        TxtCurrencyLabel4.Text = $" {_currency}";
-        TaxRow.Visibility      = _taxEnabled ? Visibility.Visible : Visibility.Collapsed;
-        TxtTaxLabel.Text       = $"الضريبة ({_taxRate:0}%)";
+            TxtCurrencyLabel1.Text = $" {_currency}";
+            TxtCurrencyLabel2.Text = $" {_currency}";
+            TxtCurrencyLabel3.Text = $" {_currency}";
+            TxtCurrencyLabel4.Text = $" {_currency}";
+            TaxRow.Visibility      = _taxEnabled ? Visibility.Visible : Visibility.Collapsed;
+            TxtTaxLabel.Text       = $"الضريبة ({_taxRate:0}%)";
 
-        // تحميل إعدادات الفاتورة
-        _receiptSettings = await LoadReceiptSettings();
+            _receiptSettings = await LoadReceiptSettings();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"تحذير: فشل تحميل الإعدادات:\n{ex.Message}", "تحذير");
+        }
     }
 
     private async Task<ReceiptSettings> LoadReceiptSettings()
     {
         var settings = new ReceiptSettings
         {
-            Currency    = _currency,
-            TaxEnabled  = _taxEnabled,
-            TaxRate     = _taxRate
+            Currency   = _currency,
+            TaxEnabled = _taxEnabled,
+            TaxRate    = _taxRate
         };
 
-        var rows = await _db.QueryAsync<dynamic>(
-            "SELECT setting_key, value FROM settings WHERE setting_key LIKE 'receipt_%'");
-
-        foreach (var row in rows)
+        try
         {
-            string key = (string)row.setting_key;
-            string val = (string)(row.value ?? "");
-            switch (key)
+            var rows = await _db.QueryAsync<dynamic>(
+                "SELECT setting_key, value FROM settings WHERE setting_key LIKE 'receipt_%'");
+
+            foreach (var row in rows)
             {
-                case "receipt_restaurant_name":     settings.RestaurantName     = val; break;
-                case "receipt_phone":               settings.Phone              = val; break;
-                case "receipt_address":             settings.Address            = val; break;
-                case "receipt_tax_number":          settings.TaxNumber          = val; break;
-                case "receipt_footer":              settings.Footer             = val; break;
-                case "receipt_show_logo":           settings.ShowLogo           = val == "1"; break;
-                case "receipt_large_customer":      settings.PrintLargeCustomer = val == "1"; break;
-                case "receipt_large_staff":         settings.PrintLargeStaff   = val == "1"; break;
-                case "receipt_small_slips":         settings.PrintSmallSlips    = val == "1"; break;
-                case "receipt_slip_by":             settings.SlipSplitBy        = val; break;
-                case "receipt_printer_name":        settings.ThermalPrinterName = val; break;
-                case "receipt_show_order_number":   settings.ShowOrderNumber    = val == "1"; break;
-                case "receipt_show_datetime":       settings.ShowDateTime       = val == "1"; break;
-                case "receipt_show_cashier":        settings.ShowCashierName    = val == "1"; break;
-                case "receipt_show_table":          settings.ShowTableNumber    = val == "1"; break;
+                string key = (string)row.setting_key;
+                string val = (string)(row.value ?? "");
+                switch (key)
+                {
+                    case "receipt_restaurant_name":   settings.RestaurantName     = val; break;
+                    case "receipt_phone":             settings.Phone              = val; break;
+                    case "receipt_address":           settings.Address            = val; break;
+                    case "receipt_tax_number":        settings.TaxNumber          = val; break;
+                    case "receipt_footer":            settings.Footer             = val; break;
+                    case "receipt_show_logo":         settings.ShowLogo           = val == "1"; break;
+                    case "receipt_large_customer":    settings.PrintLargeCustomer = val == "1"; break;
+                    case "receipt_large_staff":       settings.PrintLargeStaff    = val == "1"; break;
+                    case "receipt_small_slips":       settings.PrintSmallSlips    = val == "1"; break;
+                    case "receipt_slip_by":           settings.SlipSplitBy        = val; break;
+                    case "receipt_printer_name":      settings.ThermalPrinterName = val; break;
+                    case "receipt_show_order_number": settings.ShowOrderNumber    = val == "1"; break;
+                    case "receipt_show_datetime":     settings.ShowDateTime       = val == "1"; break;
+                    case "receipt_show_cashier":      settings.ShowCashierName    = val == "1"; break;
+                    case "receipt_show_table":        settings.ShowTableNumber    = val == "1"; break;
+                }
+            }
+
+            if (string.IsNullOrEmpty(settings.RestaurantName))
+            {
+                settings.RestaurantName = await _db.ExecuteScalarAsync<string>(
+                    "SELECT value FROM settings WHERE setting_key='restaurant_name'") ?? "مطعم الإتقان";
             }
         }
-
-        // إذا لم توجد إعدادات الفاتورة في قاعدة البيانات، استخدم القيم الافتراضية
-        if (string.IsNullOrEmpty(settings.RestaurantName))
-        {
-            settings.RestaurantName = await _db.ExecuteScalarAsync<string>(
-                "SELECT value FROM settings WHERE setting_key='restaurant_name'") ?? "مطعم الإتقان";
-        }
+        catch { /* استخدام القيم الافتراضية */ }
 
         return settings;
     }
 
     private async Task LoadCategories()
     {
-        var cats = await _db.QueryAsync<dynamic>(
-            @"SELECT DISTINCT mc.category_id, mc.category_name
-              FROM menu_categories mc
-              JOIN menu_items mi ON mc.category_id = mi.category_id
-              WHERE mi.is_available = 1 AND mc.is_active = 1
-              ORDER BY mc.sort_order, mc.category_name");
+        try
+        {
+            var cats = await _db.QueryAsync<dynamic>(
+                @"SELECT DISTINCT mc.category_id, mc.category_name
+                  FROM menu_categories mc
+                  JOIN menu_items mi ON mc.category_id = mi.category_id
+                  WHERE mi.is_available = 1 AND mc.is_active = 1
+                  ORDER BY mc.sort_order, mc.category_name");
 
-        CatPanel.Children.Clear();
-        CatPanel.Children.Add(MakeCatButton("🍽 الكل", null, true));
-        foreach (var c in cats)
-            CatPanel.Children.Add(MakeCatButton((string)c.category_name, (int)c.category_id, false));
+CatPanel.Children.Clear();
+            CatPanel.Children.Add(MakeCatButton("🍽 الكل", null, true));
+            foreach (var c in cats)
+                CatPanel.Children.Add(MakeCatButton((string?)c.category_name ?? "غير محدد", (int?)c.category_id ?? 0, false));
+        }
+        catch { /* تجاهل خطأ التصنيفات */ }
     }
 
     private async Task LoadAllItems()
     {
-        _allItems = (await _db.QueryAsync<dynamic>(
-            @"SELECT mi.item_id, mi.item_name, mc.category_name, mc.category_id,
-                     mi.price, mi.description
-              FROM menu_items mi
-              JOIN menu_categories mc ON mi.category_id = mc.category_id
-              WHERE mi.is_available = 1 AND mc.is_active = 1
-              ORDER BY mc.sort_order, mc.category_name, mi.item_name")).ToList();
-        RenderItems(_allItems);
+        try
+        {
+            _allItems = (await _db.QueryAsync<dynamic>(
+                @"SELECT mi.item_id, mi.item_name, mc.category_name, mc.category_id,
+                         mi.price, mi.description
+                  FROM menu_items mi
+                  JOIN menu_categories mc ON mi.category_id = mc.category_id
+                  WHERE mi.is_available = 1 AND mc.is_active = 1
+                  ORDER BY mc.sort_order, mc.category_name, mi.item_name")).ToList();
+            RenderItems(_allItems);
+        }
+        catch { /* تجاهل خطأ الأصناف */ }
     }
 
     private async Task LoadTables()
     {
-        var tables = await _db.QueryAsync<dynamic>(
-            "SELECT table_id, table_number FROM tables WHERE is_active=1 ORDER BY table_number");
-        CmbTable.Items.Clear();
-        CmbTable.Items.Add("بدون طاولة");
-        foreach (var t in tables)
-            CmbTable.Items.Add($"طاولة {t.table_number}");
-        CmbTable.SelectedIndex = 0;
+        try
+        {
+            var tables = await _db.QueryAsync<dynamic>(
+                "SELECT table_id, table_number FROM tables WHERE is_active=1 ORDER BY table_number");
+            CmbTable.Items.Clear();
+            CmbTable.Items.Add("بدون طاولة");
+            foreach (var t in tables)
+                CmbTable.Items.Add($"طاولة {t.table_number ?? 0}");
+            CmbTable.SelectedIndex = 0;
+        }
+        catch
+        {
+            CmbTable.Items.Clear();
+            CmbTable.Items.Add("بدون طاولة");
+            CmbTable.SelectedIndex = 0;
+        }
     }
 
     private async Task LoadTodayStats()
@@ -154,43 +213,52 @@ public partial class PosPage : Page
                 "SELECT ISNULL(SUM(total_amount),0) FROM orders WHERE CAST(created_at AS DATE)=CAST(GETDATE() AS DATE)");
             var todayCount = await _db.ExecuteScalarAsync<int?>(
                 "SELECT ISNULL(COUNT(*),0) FROM orders WHERE CAST(created_at AS DATE)=CAST(GETDATE() AS DATE)");
-            TxtTodaySales.Text  = $"مبيعات اليوم: {todaySales:N2} {_currency}";
-            TxtTodayOrders.Text = $"طلبات اليوم: {todayCount}";
+            TxtTodaySales.Text  = $"مبيعات اليوم: {todaySales ?? 0:N2} {_currency}";
+            TxtTodayOrders.Text = $"طلبات: {todayCount ?? 0}";
         }
-        catch { /* ignore stats error */ }
+        catch { /* تجاهل خطأ الإحصائيات */ }
     }
 
-    // ===== صانع أزرار التصنيفات =====
+    // ===================================================================
+    //  أزرار التصنيفات
+    // ===================================================================
     private Button MakeCatButton(string name, int? catId, bool active)
     {
         var btn = new Button
         {
-            Content = name,
-            Tag     = catId,
-            Margin  = new Thickness(0, 0, 8, 0),
-            Padding = new Thickness(14, 8, 14, 8),
-            Background  = active
+            Content         = name,
+            Tag             = catId,
+            Margin          = new Thickness(0, 0, 6, 0),
+            Padding         = new Thickness(12, 6, 12, 6),
+            Background      = active
                 ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F7941D"))
                 : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1e293b")),
-            Foreground  = Brushes.White,
-            BorderThickness = new Thickness(0),
-            Cursor      = Cursors.Hand,
-            FontSize    = 12,
-            FontWeight  = active ? FontWeights.Bold : FontWeights.Normal
+            Foreground      = active ? Brushes.White
+                : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#94A3B8")),
+            BorderThickness = new Thickness(1),
+            BorderBrush     = new SolidColorBrush((Color)ColorConverter.ConvertFromString(active ? "#F7941D" : "#334155")),
+            Cursor          = Cursors.Hand,
+            FontSize        = 12,
+            FontWeight      = active ? FontWeights.Bold : FontWeights.Normal
         };
+
         btn.Template = CreateRoundedButtonTemplate();
         btn.Click   += (_, _) =>
         {
             foreach (Button b in CatPanel.Children.OfType<Button>())
             {
-                b.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1e293b"));
-                b.FontWeight = FontWeights.Normal;
+                b.Background  = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1e293b"));
+                b.Foreground  = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#94A3B8"));
+                b.FontWeight  = FontWeights.Normal;
+                b.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#334155"));
             }
-            btn.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F7941D"));
-            btn.FontWeight = FontWeights.Bold;
+            btn.Background  = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F7941D"));
+            btn.Foreground  = Brushes.White;
+            btn.FontWeight  = FontWeights.Bold;
+            btn.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F7941D"));
 
             var filtered = catId == null ? _allItems
-                : _allItems.Where(i => (int)i.category_id == catId).ToList();
+                : _allItems.Where(i => (int?)i.category_id == catId).ToList();
             RenderItems(filtered);
         };
         return btn;
@@ -201,6 +269,10 @@ public partial class PosPage : Page
         var tpl    = new ControlTemplate(typeof(Button));
         var border = new FrameworkElementFactory(typeof(Border));
         border.SetBinding(Border.BackgroundProperty, new System.Windows.Data.Binding("Background")
+            { RelativeSource = new System.Windows.Data.RelativeSource(System.Windows.Data.RelativeSourceMode.TemplatedParent) });
+        border.SetBinding(Border.BorderBrushProperty, new System.Windows.Data.Binding("BorderBrush")
+            { RelativeSource = new System.Windows.Data.RelativeSource(System.Windows.Data.RelativeSourceMode.TemplatedParent) });
+        border.SetBinding(Border.BorderThicknessProperty, new System.Windows.Data.Binding("BorderThickness")
             { RelativeSource = new System.Windows.Data.RelativeSource(System.Windows.Data.RelativeSourceMode.TemplatedParent) });
         border.SetValue(Border.CornerRadiusProperty, new CornerRadius(8));
         border.SetBinding(Border.PaddingProperty, new System.Windows.Data.Binding("Padding")
@@ -213,83 +285,148 @@ public partial class PosPage : Page
         return tpl;
     }
 
+    // ===================================================================
+    //  عرض الأصناف بتصميم الصورة (ملونة)
+    // ===================================================================
     private void RenderItems(IEnumerable<dynamic> items)
     {
         ItemsPanel.Children.Clear();
+        int idx = 0;
         foreach (var item in items)
-            ItemsPanel.Children.Add(MakeItemCard(item));
+        {
+            ItemsPanel.Children.Add(MakeItemCard(item, idx));
+            idx++;
+        }
     }
 
-    private Border MakeItemCard(dynamic item)
+    private Border MakeItemCard(dynamic item, int index)
     {
+        // اختيار اللون من المصفوفة بشكل دوري
+        var colorHex = ItemColors[index % ItemColors.Length];
+        var bgColor  = (Color)ColorConverter.ConvertFromString(colorHex);
+        var darkColor = Color.FromRgb(
+            (byte)Math.Max(bgColor.R - 30, 0),
+            (byte)Math.Max(bgColor.G - 30, 0),
+            (byte)Math.Max(bgColor.B - 30, 0));
+
         var card = new Border
         {
-            Width  = 155, Height = 115,
-            Margin = new Thickness(0, 0, 10, 10),
-            Background    = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1e293b")),
-            CornerRadius  = new CornerRadius(10),
-            Cursor        = Cursors.Hand,
-            BorderThickness = new Thickness(1),
-            BorderBrush   = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#334155"))
+            Width           = 140,
+            Height          = 90,
+            Margin          = new Thickness(3),
+            Background      = new SolidColorBrush(bgColor),
+            CornerRadius    = new CornerRadius(8),
+            Cursor          = Cursors.Hand,
+            BorderThickness = new Thickness(0)
         };
 
-        card.MouseEnter += (_, _) => card.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#243447"));
-        card.MouseLeave += (_, _) => card.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1e293b"));
+        // تأثير hover
+        card.MouseEnter += (_, _) => card.Background = new SolidColorBrush(darkColor);
+        card.MouseLeave += (_, _) => card.Background = new SolidColorBrush(bgColor);
 
-        var sp = new StackPanel { Margin = new Thickness(12), VerticalAlignment = VerticalAlignment.Center };
-        sp.Children.Add(new TextBlock
-        {
-            Text = (string)item.item_name, Foreground = Brushes.White,
-            FontSize = 13, FontWeight = FontWeights.SemiBold, TextWrapping = TextWrapping.Wrap
-        });
-        sp.Children.Add(new TextBlock
-        {
-            Text = $"{item.price:N2} {_currency}",
-            Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#f59e0b")),
-            FontSize = 15, FontWeight = FontWeights.Bold, Margin = new Thickness(0, 6, 0, 0)
-        });
-        sp.Children.Add(new TextBlock
-        {
-            Text = (string)item.category_name,
-            Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#64748b")),
-            FontSize = 11
-        });
-        card.Child = sp;
+        // محتوى البطاقة
+        var grid = new Grid { Margin = new Thickness(8, 6, 8, 6) };
+        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
+        // الصف الأول: رقم الصنف والسعر
+        var topGrid = new Grid();
+        topGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        topGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+        var lblId = new TextBlock
+        {
+            Text       = $"({(int?)item.item_id ?? 0})",
+            FontSize   = 10,
+            Foreground = new SolidColorBrush(Color.FromArgb(180, 0, 0, 0)),
+            VerticalAlignment = VerticalAlignment.Top
+        };
+        var priceVal = (decimal?)item.price ?? 0m;
+        var lblPrice = new TextBlock
+        {
+            Text       = $"{priceVal:N0}",
+            FontSize   = 13,
+            FontWeight = FontWeights.Bold,
+            Foreground = new SolidColorBrush(Color.FromRgb(20, 20, 20)),
+            VerticalAlignment = VerticalAlignment.Top,
+            TextAlignment = TextAlignment.Left
+        };
+        Grid.SetColumn(lblPrice, 1);
+        topGrid.Children.Add(lblId);
+        topGrid.Children.Add(lblPrice);
+        Grid.SetRow(topGrid, 0);
+        grid.Children.Add(topGrid);
+
+        // الصف الثاني: اسم الصنف
+        var lblName = new TextBlock
+        {
+            Text          = (string?)item.item_name ?? "بدون اسم",
+            FontSize      = 12,
+            FontWeight    = FontWeights.SemiBold,
+            Foreground    = new SolidColorBrush(Color.FromRgb(10, 10, 10)),
+            TextWrapping  = TextWrapping.Wrap,
+            TextAlignment = TextAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Margin = new Thickness(0, 3, 0, 0)
+        };
+        Grid.SetRow(lblName, 1);
+        grid.Children.Add(lblName);
+
+        // الصف الثالث: اسم التصنيف
+        var lblCat = new TextBlock
+        {
+            Text      = (string?)item.category_name ?? "عام",
+            FontSize  = 9,
+            Foreground = new SolidColorBrush(Color.FromArgb(160, 20, 20, 20)),
+            TextAlignment = TextAlignment.Center,
+            HorizontalAlignment = HorizontalAlignment.Center
+        };
+        Grid.SetRow(lblCat, 2);
+        grid.Children.Add(lblCat);
+
+        card.Child = grid;
+
+        var itemIdVal = (int?)item.item_id ?? 0;
+        var catIdVal = (int?)item.category_id ?? 0;
+        var itemNameVal = (string?)item.item_name ?? "بدون اسم";
+        var catNameVal = (string?)item.category_name ?? "عام";
+        
         card.MouseLeftButtonUp += (_, _) =>
-            AddToCart((int)item.item_id, (string)item.item_name,
-                      (decimal)item.price, (int)item.category_id, (string)item.category_name);
+            AddToCart(itemIdVal, itemNameVal, priceVal, catIdVal, catNameVal);
         return card;
     }
 
+    // ===================================================================
+    //  السلة
+    // ===================================================================
     private void AddToCart(int id, string name, decimal price, int catId, string catName)
     {
         var existing = _cart.FirstOrDefault(i => i.ItemId == id);
         if (existing != null)
-        {
             existing.Quantity++;
-        }
         else
-        {
             _cart.Add(new CartItemModel
             {
                 ItemId = id, Name = name, Price = price,
                 Quantity = 1, CategoryId = catId, CategoryName = catName
             });
-        }
         RenderCart();
     }
 
     private void RenderCart()
     {
         CartPanel.Children.Clear();
+
         if (_cart.Count == 0)
         {
             CartPanel.Children.Add(new TextBlock
             {
                 Text = "السلة فارغة — اختر أصنافاً من القائمة",
-                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#64748b")),
-                FontSize = 12, TextAlignment = TextAlignment.Center, Margin = new Thickness(0, 20, 0, 0)
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#334155")),
+                FontSize = 12, TextAlignment = TextAlignment.Center,
+                Margin = new Thickness(0, 20, 0, 0), Padding = new Thickness(10)
             });
             UpdateTotals();
             return;
@@ -301,42 +438,47 @@ public partial class PosPage : Page
 
             var row = new Border
             {
-                Background    = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#f8fafc")),
-                CornerRadius  = new CornerRadius(8),
-                Margin        = new Thickness(0, 0, 0, 6),
-                Padding       = new Thickness(10, 8, 10, 8),
-                BorderThickness = new Thickness(1),
-                BorderBrush   = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#e2e8f0"))
+                Background      = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#131c2b")),
+                BorderBrush     = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1e293b")),
+                BorderThickness = new Thickness(0, 0, 0, 1),
+                Padding         = new Thickness(8, 6, 8, 6)
             };
 
             var g = new Grid();
             g.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            g.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            g.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(44) });
+            g.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(70) });
+            g.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(30) });
 
-            var left = new StackPanel();
-            left.Children.Add(new TextBlock
+            // الاسم
+            var nameBlock = new TextBlock
             {
-                Text = item.Name,
-                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1e293b")),
-                FontSize = 12, FontWeight = FontWeights.SemiBold
-            });
-            left.Children.Add(new TextBlock
-            {
-                Text = $"{item.Price:N2} × {item.Quantity} = {item.LineTotal:N2} {_currency}",
-                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#64748b")),
-                FontSize = 11
-            });
-
-            var right = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
-
-            var minus = MakeQtyButton("−", "#ef4444");
-            var qty   = new TextBlock
-            {
-                Text = item.Quantity.ToString(), Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1e293b")),
-                FontSize = 14, FontWeight = FontWeights.Bold, Width = 30,
-                TextAlignment = TextAlignment.Center, VerticalAlignment = VerticalAlignment.Center
+                Text          = item.Name,
+                Foreground    = Brushes.White,
+                FontSize      = 12,
+                FontWeight    = FontWeights.SemiBold,
+                VerticalAlignment = VerticalAlignment.Center
             };
-            var plus  = MakeQtyButton("+", "#22c55e");
+
+            // الكمية مع أزرار ±
+            var qtyPanel = new StackPanel
+            {
+                Orientation       = Orientation.Horizontal,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            var minus = MakeSmallBtn("−", "#ef4444");
+            var qtyTxt = new TextBlock
+            {
+                Text              = item.Quantity.ToString(),
+                Foreground        = Brushes.White,
+                FontSize          = 13,
+                FontWeight        = FontWeights.Bold,
+                Width             = 22,
+                TextAlignment     = TextAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            var plus = MakeSmallBtn("+", "#22c55e");
 
             minus.Click += (_, _) =>
             {
@@ -346,24 +488,45 @@ public partial class PosPage : Page
             };
             plus.Click  += (_, _) => { capturedItem.Quantity++; RenderCart(); };
 
-            right.Children.Add(minus);
-            right.Children.Add(qty);
-            right.Children.Add(plus);
+            qtyPanel.Children.Add(minus);
+            qtyPanel.Children.Add(qtyTxt);
+            qtyPanel.Children.Add(plus);
 
-            Grid.SetColumn(right, 1);
-            g.Children.Add(left);
-            g.Children.Add(right);
+            // السعر الإجمالي للصف
+            var priceBlock = new TextBlock
+            {
+                Text              = $"{item.LineTotal:N0}",
+                Foreground        = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F7941D")),
+                FontSize          = 12,
+                FontWeight        = FontWeights.Bold,
+                TextAlignment     = TextAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+
+            // زر الحذف
+            var delBtn = MakeSmallBtn("✕", "#475569");
+            delBtn.Click += (_, _) => { _cart.Remove(capturedItem); RenderCart(); };
+
+            Grid.SetColumn(qtyPanel, 1);
+            Grid.SetColumn(priceBlock, 2);
+            Grid.SetColumn(delBtn, 3);
+
+            g.Children.Add(nameBlock);
+            g.Children.Add(qtyPanel);
+            g.Children.Add(priceBlock);
+            g.Children.Add(delBtn);
+
             row.Child = g;
             CartPanel.Children.Add(row);
         }
         UpdateTotals();
     }
 
-    private static Button MakeQtyButton(string content, string colorHex)
+    private static Button MakeSmallBtn(string content, string colorHex)
     {
         var btn = new Button
         {
-            Content = content, Width = 28, Height = 28, FontSize = 16,
+            Content = content, Width = 22, Height = 22, FontSize = 13,
             Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(colorHex)),
             Foreground = Brushes.White, BorderThickness = new Thickness(0), Cursor = Cursors.Hand
         };
@@ -371,7 +534,7 @@ public partial class PosPage : Page
         var border = new FrameworkElementFactory(typeof(Border));
         border.SetBinding(Border.BackgroundProperty, new System.Windows.Data.Binding("Background")
             { RelativeSource = new System.Windows.Data.RelativeSource(System.Windows.Data.RelativeSourceMode.TemplatedParent) });
-        border.SetValue(Border.CornerRadiusProperty, new CornerRadius(6));
+        border.SetValue(Border.CornerRadiusProperty, new CornerRadius(4));
         var cp = new FrameworkElementFactory(typeof(ContentPresenter));
         cp.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
         cp.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
@@ -381,11 +544,14 @@ public partial class PosPage : Page
         return btn;
     }
 
+    // ===================================================================
+    //  حساب المجاميع
+    // ===================================================================
     private void UpdateTotals()
     {
         var subtotal    = _cart.Sum(i => i.LineTotal);
         var discountVal = double.TryParse(TxtDiscountVal.Text, out var d) ? d : 0;
-        var isPercent   = (CmbDiscountType.SelectedIndex == 0);
+        var isPercent   = CmbDiscountType.SelectedIndex == 0;
         var discountAmt = isPercent
             ? Math.Round((double)subtotal * discountVal / 100, 2)
             : Math.Min(discountVal, (double)subtotal);
@@ -407,79 +573,114 @@ public partial class PosPage : Page
             decimal.TryParse(TxtAmountPaid.Text, out var paid))
         {
             var change = paid - total;
-            TxtChange.Text      = $"{(change >= 0 ? change : 0):N2}";
+            TxtChange.Text       = $"{(change >= 0 ? change : 0):N2}";
             TxtChange.Foreground = change >= 0
-                ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#16a34a"))
-                : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#dc2626"));
+                ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#22c55e"))
+                : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#ef4444"));
         }
     }
 
-    // ===== طرق الدفع =====
+    // ===================================================================
+    //  طرق الدفع — إصلاح bug عدم إعادة ضبط لون النص
+    // ===================================================================
     private void SetPaymentMethod(string method, Border active)
     {
         _payMethod = method;
-        var inactive = new SolidColorBrush(Colors.White);
-        var inactiveBorder = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#e2e8f0"));
 
-        BrdCash.Background     = inactive;
-        BrdCard.Background     = inactive;
-        BrdTransfer.Background = inactive;
-        BrdCash.BorderBrush     = inactiveBorder;
-        BrdCard.BorderBrush     = inactiveBorder;
-        BrdTransfer.BorderBrush = inactiveBorder;
+        // إعادة ضبط جميع أزرار الدفع
+        BrdCash.Background     = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1A2332"));
+        BrdCard.Background     = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1A2332"));
+        BrdTransfer.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1A2332"));
 
-        foreach (TextBlock tb in GetChildren<TextBlock>(active))
-            tb.Foreground = Brushes.White;
+        BrdCash.BorderBrush     = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#334155"));
+        BrdCard.BorderBrush     = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#334155"));
+        BrdTransfer.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#334155"));
 
-        active.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F7941D"));
-        active.BorderBrush = Brushes.Transparent;
-    }
+        BrdCash.BorderThickness     = new Thickness(1);
+        BrdCard.BorderThickness     = new Thickness(1);
+        BrdTransfer.BorderThickness = new Thickness(1);
 
-    private static IEnumerable<T> GetChildren<T>(DependencyObject parent) where T : DependencyObject
-    {
-        if (parent == null) yield break;
-        for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent); i++)
-        {
-            var child = System.Windows.Media.VisualTreeHelper.GetChild(parent, i);
-            if (child is T t) yield return t;
-            foreach (var desc in GetChildren<T>(child)) yield return desc;
-        }
+        // إعادة ضبط لون نص جميع الأزرار
+        TxtCash.Foreground     = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#94A3B8"));
+        TxtCard.Foreground     = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#94A3B8"));
+        TxtTransfer.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#94A3B8"));
+
+        // تفعيل الزر المختار
+        active.Background     = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F7941D"));
+        active.BorderBrush    = Brushes.Transparent;
+        active.BorderThickness = new Thickness(0);
+
+        // تحديد نص الزر النشط بالأبيض
+        if (active == BrdCash)     TxtCash.Foreground     = Brushes.White;
+        else if (active == BrdCard)    TxtCard.Foreground     = Brushes.White;
+        else if (active == BrdTransfer) TxtTransfer.Foreground = Brushes.White;
     }
 
     private void PayCash_Click(object s, MouseButtonEventArgs e)
     {
         SetPaymentMethod("Cash", BrdCash);
-        // ضع المبلغ المستلم = الإجمالي
         TxtAmountPaid.Text = TxtTotal.Text;
     }
     private void PayCard_Click(object s, MouseButtonEventArgs e)     => SetPaymentMethod("Card", BrdCard);
     private void PayTransfer_Click(object s, MouseButtonEventArgs e) => SetPaymentMethod("Transfer", BrdTransfer);
 
+    // ===================================================================
+    //  لوحة الأرقام
+    // ===================================================================
+    private void NumPad_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.Tag is string digit)
+        {
+            var current = TxtAmountPaid.Text;
+            if (digit == "." && current.Contains('.')) return;
+            if (current == "0" && digit != ".") TxtAmountPaid.Text = digit;
+            else TxtAmountPaid.Text = current + digit;
+        }
+    }
+
+    private void NumPadClear_Click(object sender, RoutedEventArgs e)
+    {
+        if (TxtAmountPaid.Text.Length > 1)
+            TxtAmountPaid.Text = TxtAmountPaid.Text[..^1];
+        else
+            TxtAmountPaid.Text = "0";
+    }
+
+    // ===================================================================
+    //  أحداث البحث والخصم
+    // ===================================================================
     private void TxtSearch_Changed(object s, TextChangedEventArgs e)
     {
-        SearchPlaceholder.Visibility = string.IsNullOrEmpty(TxtSearch.Text) ? Visibility.Visible : Visibility.Collapsed;
+        SearchPlaceholder.Visibility = string.IsNullOrEmpty(TxtSearch.Text)
+            ? Visibility.Visible : Visibility.Collapsed;
         var q = TxtSearch.Text.Trim();
         RenderItems(string.IsNullOrEmpty(q) ? _allItems
-            : _allItems.Where(i => ((string)i.item_name).Contains(q, StringComparison.OrdinalIgnoreCase)));
+            : _allItems.Where(i => ((string?)i.item_name ?? "").Contains(q, StringComparison.OrdinalIgnoreCase)));
     }
 
     private void TxtDiscount_Changed(object s, object e) => UpdateTotals();
     private void TxtAmountPaid_Changed(object s, TextChangedEventArgs e) => UpdateChange();
 
+    // ===================================================================
+    //  مسح الطلب
+    // ===================================================================
     private void BtnClearCart_Click(object s, RoutedEventArgs e)
     {
         _cart.Clear();
         _customerId = null;
-        TxtCustomerInfo.Text = "زبون عادي";
-        TxtDiscountVal.Text  = "0";
-        TxtAmountPaid.Text   = "0";
-        TxtNotes.Text        = "";
-        CmbTable.SelectedIndex = 0;
-        CmbOrderType.SelectedIndex = 0;
+        TxtCustomerInfo.Text   = "زبون عادي";
+        TxtDiscountVal.Text    = "0";
+        TxtAmountPaid.Text     = "0";
+        TxtNotes.Text          = "";
+        if (CmbTable.Items.Count > 0)    CmbTable.SelectedIndex    = 0;
+        if (CmbOrderType.Items.Count > 0) CmbOrderType.SelectedIndex = 0;
         SetPaymentMethod("Cash", BrdCash);
         RenderCart();
     }
 
+    // ===================================================================
+    //  البحث عن عميل
+    // ===================================================================
     private async void BtnSearchCustomer_Click(object s, RoutedEventArgs e)
     {
         try
@@ -493,22 +694,25 @@ public partial class PosPage : Page
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"خطأ في البحث عن العملاء: {ex.Message}", "خطأ");
+            MessageBox.Show($"خطأ في البحث عن العملاء:\n{ex.Message}", "خطأ");
         }
     }
 
+    // ===================================================================
+    //  إتمام الطلب
+    // ===================================================================
     private async void BtnConfirmOrder_Click(object s, RoutedEventArgs e)
     {
         if (_cart.Count == 0)
         {
-            MessageBox.Show("السلة فارغة!\nيرجى إضافة أصناف قبل إتمام الطلب.", "تنبيه", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show("السلة فارغة!\nيرجى إضافة أصناف قبل إتمام الطلب.",
+                "تنبيه", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
-        // حساب المجاميع
         var subtotal    = _cart.Sum(i => i.LineTotal);
         var discountVal = double.TryParse(TxtDiscountVal.Text, out var d) ? d : 0;
-        var isPercent   = (CmbDiscountType.SelectedIndex == 0);
+        var isPercent   = CmbDiscountType.SelectedIndex == 0;
         var discountAmt = isPercent
             ? (decimal)Math.Round((double)subtotal * discountVal / 100, 2)
             : (decimal)Math.Min(discountVal, (double)subtotal);
@@ -516,20 +720,24 @@ public partial class PosPage : Page
         var taxAmt      = (decimal)(_taxEnabled ? Math.Round(taxable * _taxRate / 100, 2) : 0);
         var total       = Math.Round(subtotal - discountAmt + taxAmt, 2);
 
-        var userId   = App.CurrentUser!.UserId;
-        var branchId = App.CurrentUser!.BranchId;
-        var tableStr = CmbTable.SelectedItem?.ToString()?.Replace("طاولة ", "") ?? "";
+        var userId = App.CurrentUser?.UserId ?? 0;
+        var branchId = App.CurrentUser?.BranchId ?? 0;
+        if (userId == 0)
+        {
+            MessageBox.Show("خطأ: لا يوجد مستخدم مسجل دخوله. يرجى تسجيل الدخول مرة أخرى.", "خطأ");
+            return;
+        }
+        var tableStr  = CmbTable.SelectedItem?.ToString()?.Replace("طاولة ", "") ?? "";
         var orderType = (CmbOrderType.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "داخل المطعم";
-        var notes    = TxtNotes.Text.Trim();
+        var notes     = TxtNotes.Text.Trim();
 
         BtnConfirm.IsEnabled = false;
-        BtnConfirm.Content   = "⏳  جاري الحفظ...";
+        BtnConfirm.Content   = "⏳ جاري الحفظ...";
 
         using var conn = _db.OpenConnection();
         var tx = conn.BeginTransaction();
         try
         {
-            // حفظ الطلب والحصول على ID بشكل صحيح
             var orderIds = (await Dapper.SqlMapper.QueryAsync<int>(conn,
                 @"INSERT INTO orders
                     (customer_name, customer_id, served_by, branch_id,
@@ -553,7 +761,6 @@ public partial class PosPage : Page
             if (!orderIds.Any()) throw new Exception("فشل إنشاء الطلب");
             var orderId = orderIds[0];
 
-            // حفظ عناصر الطلب
             foreach (var item in _cart)
                 await Dapper.SqlMapper.ExecuteAsync(conn,
                     @"INSERT INTO order_items
@@ -562,17 +769,21 @@ public partial class PosPage : Page
                     new { oid = orderId, iid = item.ItemId, name = item.Name,
                           qty = item.Quantity, price = item.Price, sub = item.LineTotal }, tx);
 
-            // تسجيل الدفع
             await Dapper.SqlMapper.ExecuteAsync(conn,
                 "INSERT INTO payments (order_id, amount_paid, payment_method) VALUES (@oid, @amt, @pm)",
                 new { oid = orderId, amt = total, pm = _payMethod }, tx);
 
-            // طلب المطبخ
             var kitchenIds = (await Dapper.SqlMapper.QueryAsync<int>(conn,
                 @"INSERT INTO kitchen_orders (order_id, table_number, customer_name, notes)
                   OUTPUT INSERTED.kitchen_order_id
                   VALUES (@oid, @tbl, @cn, @notes)",
-                new { oid = orderId, tbl = tableStr, cn = TxtCustomerInfo.Text, notes = $"{orderType} | {notes}".Trim('|', ' ') }, tx)).ToList();
+                new
+                {
+                    oid   = orderId,
+                    tbl   = tableStr,
+                    cn    = TxtCustomerInfo.Text,
+                    notes = $"{orderType} | {notes}".Trim('|', ' ')
+                }, tx)).ToList();
 
             if (kitchenIds.Any())
             {
@@ -586,21 +797,17 @@ public partial class PosPage : Page
             tx.Commit();
             _lastOrderId = orderId;
 
-            // إعادة تحميل إعدادات الفاتورة
             _receiptSettings = await LoadReceiptSettings();
-
-            // طباعة الفواتير
-            var orderDetail = await BuildOrderDetail(orderId);
+            var orderDetail  = await BuildOrderDetail(orderId);
             PrintOrder(orderDetail);
 
-            // تحديث الإحصائيات
             await LoadTodayStats();
 
-            // مسح السلة
             BtnClearCart_Click(s, e);
 
-            MessageBox.Show($"✅ تم حفظ الطلب رقم #{orderId}\nالإجمالي: {total:N2} {_currency}",
-                            "تم بنجاح", MessageBoxButton.OK, MessageBoxImage.None);
+            MessageBox.Show(
+                $"✅ تم حفظ الطلب رقم #{orderId}\nالإجمالي: {total:N2} {_currency}",
+                "تم بنجاح", MessageBoxButton.OK, MessageBoxImage.None);
         }
         catch (Exception ex)
         {
@@ -610,20 +817,21 @@ public partial class PosPage : Page
         finally
         {
             BtnConfirm.IsEnabled = true;
-            BtnConfirm.Content   = "✅  إتمام الطلب والطباعة";
+            BtnConfirm.Content   = "✅ إتمام الطلب والطباعة";
         }
     }
 
+    // ===================================================================
+    //  الطباعة
+    // ===================================================================
     private void PrintOrder(OrderDetailModel order)
     {
         try
         {
             if (_receiptSettings.PrintLargeCustomer)
                 PrintService.PrintLargeReceipt(order, _receiptSettings, "نسخة العميل");
-
             if (_receiptSettings.PrintLargeStaff)
                 PrintService.PrintLargeReceipt(order, _receiptSettings, "نسخة المطعم");
-
             if (_receiptSettings.PrintSmallSlips)
                 PrintSmallSlips(order);
         }
@@ -635,11 +843,8 @@ public partial class PosPage : Page
 
     private void PrintSmallSlips(OrderDetailModel order)
     {
-        // تجميع حسب التصنيف أو المجموعة
         var groups = order.Items
-            .GroupBy(i => _receiptSettings.SlipSplitBy == "category"
-                ? i.CategoryName
-                : i.CategoryName) // يمكن تغييره لاحقاً
+            .GroupBy(i => i.CategoryName)
             .ToList();
 
         foreach (var group in groups)
@@ -672,33 +877,35 @@ public partial class PosPage : Page
 
         return new OrderDetailModel
         {
-            OrderId       = orderId,
-            CustomerName  = (string)(order?.customer_name ?? "زبون عادي"),
-            PaymentMethod = (string)(order?.payment_method ?? "Cash"),
-            Subtotal      = (decimal)(order?.subtotal ?? 0),
-            DiscountAmount = (decimal)(order?.discount_amount ?? 0),
-            TaxAmount     = (decimal)(order?.tax_amount ?? 0),
-            TotalAmount   = (decimal)(order?.total_amount ?? 0),
-            OrderStatus   = (string)(order?.order_status ?? ""),
-            CreatedAt     = (DateTime)(order?.created_at ?? DateTime.Now),
-            ServedBy      = (string)(order?.served_by_name ?? ""),
-            TableNumber   = (string)(order?.table_number ?? ""),
-            Items         = items.Select(i => new OrderItemDetailModel
+            OrderId        = orderId,
+            CustomerName   = (string)(order?.customer_name   ?? "زبون عادي"),
+            PaymentMethod  = (string)(order?.payment_method  ?? "Cash"),
+            Subtotal       = (decimal)(order?.subtotal        ?? 0m),
+            DiscountAmount = (decimal)(order?.discount_amount ?? 0m),
+            TaxAmount      = (decimal)(order?.tax_amount      ?? 0m),
+            TotalAmount    = (decimal)(order?.total_amount    ?? 0m),
+            OrderStatus    = (string)(order?.order_status     ?? ""),
+            CreatedAt      = (DateTime)(order?.created_at     ?? DateTime.Now),
+            ServedBy       = (string)(order?.served_by_name   ?? ""),
+            TableNumber    = (string)(order?.table_number     ?? ""),
+            Items          = items.Select(i => new OrderItemDetailModel
             {
-                ItemName     = (string)i.item_name,
-                Quantity     = (int)i.quantity,
-                UnitPrice    = (decimal)i.unit_price,
-                Subtotal     = (decimal)i.subtotal,
-                CategoryName = (string)i.category_name
+                ItemName     = (string?)i.item_name ?? "",
+                Quantity     = (int?)i.quantity ?? 0,
+                UnitPrice    = (decimal?)i.unit_price ?? 0m,
+                Subtotal     = (decimal?)i.subtotal ?? 0m,
+                CategoryName = (string?)i.category_name ?? "عام"
             }).ToList()
         };
     }
 
+    // ===================================================================
+    //  آخر فاتورة وإعادة الطباعة
+    // ===================================================================
     private async void BtnLastInvoice_Click(object s, RoutedEventArgs e)
     {
         try
         {
-            // البحث عن آخر طلب
             var lastId = await _db.ExecuteScalarAsync<int?>(
                 "SELECT TOP 1 order_id FROM orders ORDER BY order_id DESC");
 
@@ -715,7 +922,7 @@ public partial class PosPage : Page
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"خطأ في تحميل آخر فاتورة: {ex.Message}", "خطأ");
+            MessageBox.Show($"خطأ في تحميل آخر فاتورة:\n{ex.Message}", "خطأ");
         }
     }
 
@@ -735,18 +942,25 @@ public partial class PosPage : Page
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"خطأ في إعادة الطباعة: {ex.Message}", "خطأ");
+            MessageBox.Show($"خطأ في إعادة الطباعة:\n{ex.Message}", "خطأ");
         }
     }
 
+    // ===================================================================
+    //  إعدادات الكاشير
+    // ===================================================================
     private async void BtnSettings_Click(object s, RoutedEventArgs e)
     {
-        var win = new PosSettingsWindow(_db);
-        win.Owner = Window.GetWindow(this);
-        if (win.ShowDialog() == true)
+        try
         {
-            // إعادة تحميل كل شيء بعد حفظ الإعدادات
-            await LoadAsync();
+            var win = new PosSettingsWindow(_db);
+            win.Owner = Window.GetWindow(this);
+            if (win.ShowDialog() == true)
+                await LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"خطأ في فتح الإعدادات:\n{ex.Message}", "خطأ");
         }
     }
 }

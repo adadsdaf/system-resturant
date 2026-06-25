@@ -16,18 +16,25 @@ public partial class SuppliersPage : Page
 
     private async Task LoadAsync()
     {
-        var rows = await _db.QueryAsync<dynamic>(
-            @"SELECT supplier_id, company_name, contact_name, phone, email, is_active
-              FROM suppliers ORDER BY company_name");
-
-        GridSuppliers.ItemsSource = rows.Select(r => new
+        try
         {
-            r.supplier_id, r.company_name, r.contact_name,
-            phone      = (string)(r.phone ?? ""),
-            email      = (string)(r.email ?? ""),
-            status_txt = ((bool)r.is_active) ? "✅ نشط" : "⛔ موقوف",
-            r.is_active
-        }).ToList();
+            var rows = await _db.QueryAsync<dynamic>(
+                @"SELECT supplier_id, company_name, contact_name, phone, email, is_active
+                  FROM suppliers ORDER BY company_name");
+
+            GridSuppliers.ItemsSource = rows.Select(r => new
+            {
+                r.supplier_id, r.company_name, r.contact_name,
+                phone      = (string)(r.phone ?? ""),
+                email      = (string)(r.email ?? ""),
+                status_txt = ((bool)r.is_active) ? "✅ نشط" : "⛔ موقوف",
+                r.is_active
+            }).ToList();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"خطأ في تحميل بيانات الموردين:\n{ex.Message}", "خطأ", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
     }
 
     private void BtnAdd_Click(object s, RoutedEventArgs e)
