@@ -80,7 +80,7 @@ public partial class MainWindow : Window
         {
             var db   = new DbHelper(App.ConnectionString);
             var name = await db.ExecuteScalarAsync<string>(
-                "SELECT setting_value FROM settings WHERE setting_key='restaurant_name'");
+                "SELECT value FROM settings WHERE setting_key='restaurant_name'");
             if (!string.IsNullOrEmpty(name))
             {
                 TxtLicenseBadge.Text    = "هذا النظام مرخص لـ";
@@ -126,7 +126,31 @@ public partial class MainWindow : Window
                 AddSideBtn("👥", "العملاء", "Customers");
                 break;
 
-            default: // Owner, Admin, Manager
+            case "Manager":
+                AddSectionLabel("الرئيسية");
+                AddSideBtn("🏠", "لوحة التحكم", "Dashboard");
+                AddSectionLabel("العمليات");
+                AddSideBtn("🛒", "نقطة البيع", "Pos");
+                AddSideBtn("👨‍🍳", "المطبخ", "Kitchen");
+                AddSideBtn("📋", "القائمة والأصناف", "Menu");
+                AddSideBtn("📦", "المخزون", "Inventory");
+                AddSectionLabel("المالية");
+                AddSideBtn("🧾", "المبيعات", "Sales");
+                AddSideBtn("📅", "الحجوزات", "Reservations");
+                AddSideBtn("📈", "التقارير", "Reports");
+                AddSectionLabel("الشركاء");
+                AddSideBtn("👥", "العملاء", "Customers");
+                AddSideBtn("🏭", "الموردون", "Suppliers");
+                if (u.CanAccess("UserMgmt"))
+                {
+                    AddSectionLabel("إدارة الموظفين");
+                    AddSideBtn("👤", "موظفو فريقي", "Admin");
+                }
+                AddSectionLabel("حسابي");
+                AddSideBtn("🔑", "تغيير كلمة المرور", "ChangePassword");
+                break;
+
+            default: // Owner, Admin
                 AddSectionLabel("الرئيسية");
                 AddSideBtn("🏠", "لوحة التحكم", "Dashboard");
                 AddSectionLabel("العمليات");

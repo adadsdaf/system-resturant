@@ -11,16 +11,16 @@
 
         <!-- تبويبات الإدارة -->
         <WrapPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,14">
-            <Button Content="👤  المستخدمون"   Tag="Users"       Click="TabBtn_Click" Style="{StaticResource PrimaryButton}" Margin="0,0,6,0"/>
-            <Button Content="🏪  الطاولات"     Tag="Tables"      Click="TabBtn_Click" Style="{StaticResource GhostButton}"   Margin="0,0,6,0"/>
-            <Button Content="⚙️  الإعدادات"    Tag="Settings"    Click="TabBtn_Click" Style="{StaticResource GhostButton}"   Margin="0,0,6,0"/>
-            <Button Content="🏬  بيانات الفرع" Tag="Branch"      Click="TabBtn_Click" Style="{StaticResource GhostButton}"   Margin="0,0,6,0"/>
-            <Button Content="💱  العملات"      Tag="Currencies"  Click="TabBtn_Click" Style="{StaticResource GhostButton}"   Margin="0,0,6,0"/>
-            <Button Content="🖥  الأجهزة"       Tag="Devices"     Click="TabBtn_Click" Style="{StaticResource GhostButton}"   Margin="0,0,6,0"/>
-            <Button Content="🔒  الصلاحيات"    Tag="Permissions" Click="TabBtn_Click" Style="{StaticResource GhostButton}"   Margin="0,0,6,0"/>
-            <Button Content="🖨  الطابعات"      Tag="Printers"    Click="TabBtn_Click" Style="{StaticResource GhostButton}"   Margin="0,0,6,0"/>
-            <Button Content="🕐  جلسات الدخول" Tag="Sessions"    Click="TabBtn_Click" Style="{StaticResource GhostButton}"   Margin="0,0,6,0"/>
-            <Button Content="📝  سجل الأحداث"  Tag="Logs"        Click="TabBtn_Click" Style="{StaticResource GhostButton}"/>
+            <Button x:Name="BtnTabUsers"       Content="👤  المستخدمون"   Tag="Users"       Click="TabBtn_Click" Style="{StaticResource PrimaryButton}" Margin="0,0,6,0"/>
+            <Button x:Name="BtnTabTables"      Content="🏪  الطاولات"     Tag="Tables"      Click="TabBtn_Click" Style="{StaticResource GhostButton}"   Margin="0,0,6,0"/>
+            <Button x:Name="BtnTabSettings"    Content="⚙️  الإعدادات"    Tag="Settings"    Click="TabBtn_Click" Style="{StaticResource GhostButton}"   Margin="0,0,6,0"/>
+            <Button x:Name="BtnTabBranch"      Content="🏬  بيانات الفرع" Tag="Branch"      Click="TabBtn_Click" Style="{StaticResource GhostButton}"   Margin="0,0,6,0"/>
+            <Button x:Name="BtnTabCurrencies"  Content="💱  العملات"      Tag="Currencies"  Click="TabBtn_Click" Style="{StaticResource GhostButton}"   Margin="0,0,6,0"/>
+            <Button x:Name="BtnTabDevices"     Content="🖥  الأجهزة"       Tag="Devices"     Click="TabBtn_Click" Style="{StaticResource GhostButton}"   Margin="0,0,6,0"/>
+            <Button x:Name="BtnTabPermissions" Content="🔒  الصلاحيات"    Tag="Permissions" Click="TabBtn_Click" Style="{StaticResource GhostButton}"   Margin="0,0,6,0"/>
+            <Button x:Name="BtnTabPrinters"    Content="🖨  الطابعات"      Tag="Printers"    Click="TabBtn_Click" Style="{StaticResource GhostButton}"   Margin="0,0,6,0"/>
+            <Button x:Name="BtnTabSessions"    Content="🕐  جلسات الدخول" Tag="Sessions"    Click="TabBtn_Click" Style="{StaticResource GhostButton}"   Margin="0,0,6,0"/>
+            <Button x:Name="BtnTabLogs"        Content="📝  سجل الأحداث"  Tag="Logs"        Click="TabBtn_Click" Style="{StaticResource GhostButton}"/>
         </WrapPanel>
 
         <!-- محتوى التبويب -->

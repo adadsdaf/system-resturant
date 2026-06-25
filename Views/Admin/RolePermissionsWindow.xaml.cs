@@ -199,6 +199,7 @@ public partial class RolePermissionsWindow : Window
         "Reservations" => "📅",
         "Reports"      => "📈",
         "Admin"        => "⚙️",
+        "UserMgmt"     => "👤",
         _              => "📄"
     };
 }

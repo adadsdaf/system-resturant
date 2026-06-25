@@ -35,7 +35,7 @@ public partial class HomePage : Page
         {
             var db = new DbHelper(App.ConnectionString);
             var name = await db.ExecuteScalarAsync<string>(
-                "SELECT TOP 1 setting_value FROM settings WHERE setting_key = 'restaurant_name'");
+                "SELECT TOP 1 value FROM settings WHERE setting_key = 'restaurant_name'");
             TxtLicenseInfo.Text = string.IsNullOrEmpty(name)
                 ? "هذا النظام مرخص لـ —"
                 : $"هذا النظام مرخص لـ  {name}";

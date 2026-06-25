@@ -78,20 +78,20 @@ public partial class PosPage : Page
         try
         {
             _currency   = await _db.ExecuteScalarAsync<string>(
-                              "SELECT value FROM settings WHERE setting_key='currency'") ?? "ريال";
+                              "SELECT TOP 1 value FROM settings WHERE setting_key='currency'") ?? "ريال";
             var taxEn   = await _db.ExecuteScalarAsync<string>(
-                              "SELECT value FROM settings WHERE setting_key='tax_enabled'") ?? "0";
+                              "SELECT TOP 1 value FROM settings WHERE setting_key='tax_enabled'") ?? "0";
             var taxR    = await _db.ExecuteScalarAsync<string>(
-                              "SELECT value FROM settings WHERE setting_key='tax_rate'") ?? "0";
+                              "SELECT TOP 1 value FROM settings WHERE setting_key='tax_rate'") ?? "0";
             _taxEnabled = taxEn == "1";
             _taxRate    = double.TryParse(taxR, out var r) ? r : 0;
 
-            TxtCurrencyLabel1.Text = $" {_currency}";
-            TxtCurrencyLabel2.Text = $" {_currency}";
-            TxtCurrencyLabel3.Text = $" {_currency}";
-            TxtCurrencyLabel4.Text = $" {_currency}";
-            TaxRow.Visibility      = _taxEnabled ? Visibility.Visible : Visibility.Collapsed;
-            TxtTaxLabel.Text       = $"الضريبة ({_taxRate:0}%)";
+            if (TxtCurrencyLabel1 != null) TxtCurrencyLabel1.Text = $" {_currency}";
+            if (TxtCurrencyLabel2 != null) TxtCurrencyLabel2.Text = $" {_currency}";
+            if (TxtCurrencyLabel3 != null) TxtCurrencyLabel3.Text = $" {_currency}";
+            if (TxtCurrencyLabel4 != null) TxtCurrencyLabel4.Text = $" {_currency}";
+            if (TaxRow   != null) TaxRow.Visibility  = _taxEnabled ? Visibility.Visible : Visibility.Collapsed;
+            if (TxtTaxLabel != null) TxtTaxLabel.Text = $"الضريبة ({_taxRate:0}%)";
 
             _receiptSettings = await LoadReceiptSettings();
         }
@@ -117,8 +117,9 @@ public partial class PosPage : Page
 
             foreach (var row in rows)
             {
-                string key = (string)row.setting_key;
-                string val = (string)(row.value ?? "");
+                string? key = row?.setting_key as string;
+                if (key == null) continue;
+                string val = row?.value as string ?? "";
                 switch (key)
                 {
                     case "receipt_restaurant_name":   settings.RestaurantName     = val; break;
@@ -142,7 +143,7 @@ public partial class PosPage : Page
             if (string.IsNullOrEmpty(settings.RestaurantName))
             {
                 settings.RestaurantName = await _db.ExecuteScalarAsync<string>(
-                    "SELECT value FROM settings WHERE setting_key='restaurant_name'") ?? "مطعم الإتقان";
+                    "SELECT TOP 1 value FROM settings WHERE setting_key='restaurant_name'") ?? "مطعم الإتقان";
             }
         }
         catch { /* استخدام القيم الافتراضية */ }
@@ -161,10 +162,15 @@ public partial class PosPage : Page
                   WHERE mi.is_available = 1 AND mc.is_active = 1
                   ORDER BY mc.sort_order, mc.category_name");
 
-CatPanel.Children.Clear();
+            CatPanel.Children.Clear();
             CatPanel.Children.Add(MakeCatButton("🍽 الكل", null, true));
             foreach (var c in cats)
-                CatPanel.Children.Add(MakeCatButton((string?)c.category_name ?? "غير محدد", (int?)c.category_id ?? 0, false));
+            {
+                string? catName = c?.category_name as string;
+                int?    catId   = c?.category_id   is int cid ? cid : (int?)null;
+                if (catName != null && catId != null)
+                    CatPanel.Children.Add(MakeCatButton(catName, catId, false));
+            }
         }
         catch { /* تجاهل خطأ التصنيفات */ }
     }
@@ -194,7 +200,7 @@ CatPanel.Children.Clear();
             CmbTable.Items.Clear();
             CmbTable.Items.Add("بدون طاولة");
             foreach (var t in tables)
-                CmbTable.Items.Add($"طاولة {t.table_number ?? 0}");
+                CmbTable.Items.Add($"طاولة {t.table_number}");
             CmbTable.SelectedIndex = 0;
         }
         catch
@@ -258,7 +264,7 @@ CatPanel.Children.Clear();
             btn.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F7941D"));
 
             var filtered = catId == null ? _allItems
-                : _allItems.Where(i => (int?)i.category_id == catId).ToList();
+                : _allItems.Where(i => i?.category_id is int cid && cid == catId.Value).ToList();
             RenderItems(filtered);
         };
         return btn;
@@ -301,6 +307,17 @@ CatPanel.Children.Clear();
 
     private Border MakeItemCard(dynamic item, int index)
     {
+        // استخراج القيم بأمان من الكائن الديناميكي
+        int    itemId   = item?.item_id      is int    id  ? id  : 0;
+        string itemName = item?.item_name    as string     ?? "—";
+        decimal price   = item?.price        is decimal p  ? p
+                        : item?.price        is double  pd ? (decimal)pd
+                        : item?.price        is float   pf ? (decimal)pf
+                        : item?.price        is long    pl ? (decimal)pl
+                        : item?.price        is int     pi ? (decimal)pi : 0m;
+        int    catId    = item?.category_id  is int    cid ? cid : 0;
+        string catName  = item?.category_name as string    ?? "";
+
         // اختيار اللون من المصفوفة بشكل دوري
         var colorHex = ItemColors[index % ItemColors.Length];
         var bgColor  = (Color)ColorConverter.ConvertFromString(colorHex);
@@ -337,15 +354,14 @@ CatPanel.Children.Clear();
 
         var lblId = new TextBlock
         {
-            Text       = $"({(int?)item.item_id ?? 0})",
+            Text       = $"({itemId})",
             FontSize   = 10,
             Foreground = new SolidColorBrush(Color.FromArgb(180, 0, 0, 0)),
             VerticalAlignment = VerticalAlignment.Top
         };
-        var priceVal = (decimal?)item.price ?? 0m;
         var lblPrice = new TextBlock
         {
-            Text       = $"{priceVal:N0}",
+            Text       = $"{price:N0}",
             FontSize   = 13,
             FontWeight = FontWeights.Bold,
             Foreground = new SolidColorBrush(Color.FromRgb(20, 20, 20)),
@@ -361,7 +377,7 @@ CatPanel.Children.Clear();
         // الصف الثاني: اسم الصنف
         var lblName = new TextBlock
         {
-            Text          = (string?)item.item_name ?? "بدون اسم",
+            Text          = itemName,
             FontSize      = 12,
             FontWeight    = FontWeights.SemiBold,
             Foreground    = new SolidColorBrush(Color.FromRgb(10, 10, 10)),
@@ -377,7 +393,7 @@ CatPanel.Children.Clear();
         // الصف الثالث: اسم التصنيف
         var lblCat = new TextBlock
         {
-            Text      = (string?)item.category_name ?? "عام",
+            Text      = catName,
             FontSize  = 9,
             Foreground = new SolidColorBrush(Color.FromArgb(160, 20, 20, 20)),
             TextAlignment = TextAlignment.Center,
@@ -388,13 +404,8 @@ CatPanel.Children.Clear();
 
         card.Child = grid;
 
-        var itemIdVal = (int?)item.item_id ?? 0;
-        var catIdVal = (int?)item.category_id ?? 0;
-        var itemNameVal = (string?)item.item_name ?? "بدون اسم";
-        var catNameVal = (string?)item.category_name ?? "عام";
-        
         card.MouseLeftButtonUp += (_, _) =>
-            AddToCart(itemIdVal, itemNameVal, priceVal, catIdVal, catNameVal);
+            AddToCart(itemId, itemName, price, catId, catName);
         return card;
     }
 
@@ -651,11 +662,16 @@ CatPanel.Children.Clear();
     // ===================================================================
     private void TxtSearch_Changed(object s, TextChangedEventArgs e)
     {
-        SearchPlaceholder.Visibility = string.IsNullOrEmpty(TxtSearch.Text)
-            ? Visibility.Visible : Visibility.Collapsed;
-        var q = TxtSearch.Text.Trim();
+        if (SearchPlaceholder != null)
+            SearchPlaceholder.Visibility = string.IsNullOrEmpty(TxtSearch?.Text)
+                ? Visibility.Visible : Visibility.Collapsed;
+        var q = TxtSearch?.Text?.Trim() ?? "";
         RenderItems(string.IsNullOrEmpty(q) ? _allItems
-            : _allItems.Where(i => ((string?)i.item_name ?? "").Contains(q, StringComparison.OrdinalIgnoreCase)));
+            : _allItems.Where(i =>
+            {
+                string name = i?.item_name as string ?? "";
+                return name.Contains(q, StringComparison.OrdinalIgnoreCase);
+            }));
     }
 
     private void TxtDiscount_Changed(object s, object e) => UpdateTotals();
@@ -720,13 +736,8 @@ CatPanel.Children.Clear();
         var taxAmt      = (decimal)(_taxEnabled ? Math.Round(taxable * _taxRate / 100, 2) : 0);
         var total       = Math.Round(subtotal - discountAmt + taxAmt, 2);
 
-        var userId = App.CurrentUser?.UserId ?? 0;
-        var branchId = App.CurrentUser?.BranchId ?? 0;
-        if (userId == 0)
-        {
-            MessageBox.Show("خطأ: لا يوجد مستخدم مسجل دخوله. يرجى تسجيل الدخول مرة أخرى.", "خطأ");
-            return;
-        }
+        var userId    = App.CurrentUser!.UserId;
+        var branchId  = App.CurrentUser!.BranchId;
         var tableStr  = CmbTable.SelectedItem?.ToString()?.Replace("طاولة ", "") ?? "";
         var orderType = (CmbOrderType.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "داخل المطعم";
         var notes     = TxtNotes.Text.Trim();
@@ -878,23 +889,25 @@ CatPanel.Children.Clear();
         return new OrderDetailModel
         {
             OrderId        = orderId,
-            CustomerName   = (string)(order?.customer_name   ?? "زبون عادي"),
-            PaymentMethod  = (string)(order?.payment_method  ?? "Cash"),
-            Subtotal       = (decimal)(order?.subtotal        ?? 0m),
-            DiscountAmount = (decimal)(order?.discount_amount ?? 0m),
-            TaxAmount      = (decimal)(order?.tax_amount      ?? 0m),
-            TotalAmount    = (decimal)(order?.total_amount    ?? 0m),
-            OrderStatus    = (string)(order?.order_status     ?? ""),
-            CreatedAt      = (DateTime)(order?.created_at     ?? DateTime.Now),
-            ServedBy       = (string)(order?.served_by_name   ?? ""),
-            TableNumber    = (string)(order?.table_number     ?? ""),
+            CustomerName   = order?.customer_name   as string ?? "زبون عادي",
+            PaymentMethod  = order?.payment_method  as string ?? "Cash",
+            Subtotal       = order?.subtotal       is decimal sub  ? sub  : 0m,
+            DiscountAmount = order?.discount_amount is decimal disc ? disc : 0m,
+            TaxAmount      = order?.tax_amount      is decimal tax  ? tax  : 0m,
+            TotalAmount    = order?.total_amount    is decimal tot  ? tot  : 0m,
+            OrderStatus    = order?.order_status   as string ?? "",
+            CreatedAt      = order?.created_at     is DateTime dt  ? dt   : DateTime.Now,
+            ServedBy       = order?.served_by_name as string ?? "",
+            TableNumber    = order?.table_number   as string ?? "",
             Items          = items.Select(i => new OrderItemDetailModel
             {
-                ItemName     = (string?)i.item_name ?? "",
-                Quantity     = (int?)i.quantity ?? 0,
-                UnitPrice    = (decimal?)i.unit_price ?? 0m,
-                Subtotal     = (decimal?)i.subtotal ?? 0m,
-                CategoryName = (string?)i.category_name ?? "عام"
+                ItemName     = i?.item_name     as string  ?? "",
+                Quantity     = i?.quantity      is int qty ? qty  : 0,
+                UnitPrice    = i?.unit_price    is decimal up  ? up   :
+                               i?.unit_price    is double  upd ? (decimal)upd : 0m,
+                Subtotal     = i?.subtotal      is decimal st  ? st   :
+                               i?.subtotal      is double  std ? (decimal)std : 0m,
+                CategoryName = i?.category_name as string  ?? ""
             }).ToList()
         };
     }

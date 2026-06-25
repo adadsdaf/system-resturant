@@ -1,4 +1,5 @@
 using RestaurantMS.Desktop.Data;
+using RestaurantMS.Desktop.Models;
 using RestaurantMS.Desktop.Services;
 using System.Windows;
 using System.Windows.Controls;
@@ -13,12 +14,42 @@ public partial class AdminPage : Page
     public AdminPage()
     {
         InitializeComponent();
-        Loaded += async (_, _) => await LoadUsersAsync();
+        Loaded += async (_, _) =>
+        {
+            ApplyRoleRestrictions();
+            await LoadUsersAsync();
+        };
+    }
+
+    // ===== تطبيق قيود الدور على التبويبات =====
+    private void ApplyRoleRestrictions()
+    {
+        var u = App.CurrentUser;
+        if (u == null) return;
+
+        // المدير يرى تبويب المستخدمين فقط — بقية التبويبات مخفية
+        if (u.IsStrictManager)
+        {
+            BtnTabTables.Visibility      = Visibility.Collapsed;
+            BtnTabSettings.Visibility    = Visibility.Collapsed;
+            BtnTabBranch.Visibility      = Visibility.Collapsed;
+            BtnTabCurrencies.Visibility  = Visibility.Collapsed;
+            BtnTabDevices.Visibility     = Visibility.Collapsed;
+            BtnTabPermissions.Visibility = Visibility.Collapsed;
+            BtnTabPrinters.Visibility    = Visibility.Collapsed;
+            BtnTabSessions.Visibility    = Visibility.Collapsed;
+            BtnTabLogs.Visibility        = Visibility.Collapsed;
+        }
     }
 
     private async void TabBtn_Click(object s, RoutedEventArgs e)
     {
         if (((Button)s).Tag is not string tag) return;
+
+        // المدير لا يستطيع الوصول لتبويبات أخرى
+        var u = App.CurrentUser;
+        if (u?.IsStrictManager == true && tag != "Users") return;
+
         _activeTab = tag;
         HideAll();
 
@@ -76,44 +107,110 @@ public partial class AdminPage : Page
         PanelLogs.Visibility       = Visibility.Collapsed;
     }
 
-    // ===== المستخدمون =====
+    // ===================================================================
+    //  المستخدمون
+    // ===================================================================
     private async Task LoadUsersAsync()
     {
         try
         {
-            // المستخدم الحالي: إذا لم يكن مالكاً فلا يرى حسابات المالك
-            bool currentIsOwner = App.CurrentUser?.IsOwner == true;
-            int  currentUserId  = App.CurrentUser?.UserId ?? 0;
+            var u = App.CurrentUser;
+            if (u == null) return;
 
-            var rows = await _db.QueryAsync<dynamic>(
-                @"SELECT u.user_id, u.full_name, u.username, u.is_active, u.last_login,
-                         u.role_id, u.branch_id,
-                         ISNULL(r.role_name,'—') AS role_name,
-                         ISNULL(b.arabic_name,'—') AS branch_name,
-                         CASE WHEN ISNULL(r.role_name,'') = 'Owner' THEN 1 ELSE 0 END AS is_owner_row
-                  FROM users u
-                  LEFT JOIN roles    r ON u.role_id   = r.role_id
-                  LEFT JOIN branches b ON u.branch_id = b.branch_id
-                  WHERE @isOwner = 1 OR ISNULL(r.role_name,'') != 'Owner'
-                  ORDER BY is_owner_row DESC, u.full_name",
-                new { isOwner = currentIsOwner ? 1 : 0 });
+            bool currentIsOwner    = u.IsOwner;
+            bool currentIsManager  = u.IsStrictManager;
+            int  currentUserId     = u.UserId;
+
+            // التحقق من وجود عمود created_by
+            bool hasCreatedBy = await _db.ExecuteScalarAsync<int>(
+                "SELECT COUNT(*) FROM sys.columns WHERE object_id=OBJECT_ID('users') AND name='created_by'") > 0;
+
+            string query;
+            object param;
+
+            if (currentIsOwner)
+            {
+                // المالك يرى الجميع
+                query = @"SELECT u.user_id, u.full_name, u.username, u.is_active, u.last_login,
+                                 u.role_id, u.branch_id,
+                                 ISNULL(r.role_name,'—') AS role_name,
+                                 ISNULL(b.arabic_name,'—') AS branch_name,
+                                 CASE WHEN ISNULL(r.role_name,'') = 'Owner' THEN 1 ELSE 0 END AS is_owner_row,
+                                 " + (hasCreatedBy ? "ISNULL(u.created_by,0)" : "0") + @" AS created_by
+                          FROM users u
+                          LEFT JOIN roles    r ON u.role_id   = r.role_id
+                          LEFT JOIN branches b ON u.branch_id = b.branch_id
+                          ORDER BY is_owner_row DESC, u.full_name";
+                param = new { };
+            }
+            else if (currentIsManager)
+            {
+                // المدير يرى فقط المستخدمين الذين أنشأهم
+                if (hasCreatedBy)
+                {
+                    query = @"SELECT u.user_id, u.full_name, u.username, u.is_active, u.last_login,
+                                     u.role_id, u.branch_id,
+                                     ISNULL(r.role_name,'—') AS role_name,
+                                     ISNULL(b.arabic_name,'—') AS branch_name,
+                                     0 AS is_owner_row,
+                                     ISNULL(u.created_by,0) AS created_by
+                              FROM users u
+                              LEFT JOIN roles    r ON u.role_id   = r.role_id
+                              LEFT JOIN branches b ON u.branch_id = b.branch_id
+                              WHERE u.created_by = @uid
+                                AND ISNULL(r.role_name,'') IN (N'Cashier', N'Kitchen', N'Waiter')
+                              ORDER BY u.full_name";
+                    param = new { uid = currentUserId };
+                }
+                else
+                {
+                    // عمود created_by غير موجود — أظهر رسالة إرشادية
+                    GridUsers.ItemsSource = null;
+                    MessageBox.Show(
+                        "لم يتم تطبيق تحديث قاعدة البيانات V4 بعد.\n" +
+                        "يرجى تشغيل Database/update_v4.sql في SQL Server Management Studio\n" +
+                        "لتفعيل ميزة تتبع منشئ الحسابات.",
+                        "تحديث مطلوب", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+            }
+            else
+            {
+                // مسؤول — يرى الجميع ما عدا المالك
+                query = @"SELECT u.user_id, u.full_name, u.username, u.is_active, u.last_login,
+                                 u.role_id, u.branch_id,
+                                 ISNULL(r.role_name,'—') AS role_name,
+                                 ISNULL(b.arabic_name,'—') AS branch_name,
+                                 CASE WHEN ISNULL(r.role_name,'') = 'Owner' THEN 1 ELSE 0 END AS is_owner_row,
+                                 " + (hasCreatedBy ? "ISNULL(u.created_by,0)" : "0") + @" AS created_by
+                          FROM users u
+                          LEFT JOIN roles    r ON u.role_id   = r.role_id
+                          LEFT JOIN branches b ON u.branch_id = b.branch_id
+                          WHERE ISNULL(r.role_name,'') != 'Owner'
+                          ORDER BY u.full_name";
+                param = new { };
+            }
+
+            var rows = await _db.QueryAsync<dynamic>(query, param);
 
             GridUsers.ItemsSource = rows.Select(r => new
             {
                 r.user_id, r.full_name, r.username, r.role_name,
                 branch_name  = (string)(r.branch_name ?? ""),
-                last_login   = r.last_login != null ? ((DateTime)r.last_login).ToString("dd/MM/yyyy HH:mm") : "لم يسجّل",
+                last_login   = r.last_login != null
+                    ? ((DateTime)r.last_login).ToString("dd/MM/yyyy HH:mm") : "لم يسجّل",
                 status_txt   = ((bool)r.is_active) ? "✅ نشط" : "⛔ موقوف",
                 r.is_active,
                 is_owner_row = (int)r.is_owner_row,
-                // إضافة علامة للحماية: لا يمكن للمستخدم تعديل نفسه أو حساب أعلى منه
+                created_by   = (int)r.created_by,
                 is_protected = (int)r.is_owner_row == 1 && !currentIsOwner,
                 is_self      = (int)r.user_id == currentUserId
             }).ToList();
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"خطأ في تحميل المستخدمين:\n{ex.Message}", "خطأ", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show($"خطأ في تحميل المستخدمين:\n{ex.Message}",
+                "خطأ", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 
@@ -127,18 +224,32 @@ public partial class AdminPage : Page
     {
         if (((Button)s).Tag is not { } user) return;
 
-        // حماية: لا يمكن تعديل حساب المالك من قبل غير المالك
         try
         {
-            dynamic u = user;
-            if ((int)u.is_owner_row == 1 && App.CurrentUser?.IsOwner != true)
+            dynamic u     = user;
+            var currentU  = App.CurrentUser;
+
+            // حماية: لا يمكن تعديل حساب المالك من قبل غير المالك
+            if ((int)u.is_owner_row == 1 && currentU?.IsOwner != true)
             {
                 MessageBox.Show("لا يمكنك تعديل حساب مالك النظام.\nهذه الصلاحية محجوزة لمالك النظام فقط.",
                     "غير مصرح", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
+
+            // حماية: المدير يعدّل فقط من أنشأه
+            if (currentU?.IsStrictManager == true)
+            {
+                int createdBy = (int)u.created_by;
+                if (createdBy != currentU.UserId)
+                {
+                    MessageBox.Show("لا يمكنك تعديل هذا المستخدم.\nيمكنك فقط تعديل الحسابات التي أنشأتها.",
+                        "غير مصرح", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+            }
         }
-        catch { /* تجاهل خطأ dynamic cast */ }
+        catch { }
 
         var dlg = new UserDialog(_db, user);
         if (dlg.ShowDialog() == true) _ = LoadUsersAsync();
@@ -148,30 +259,52 @@ public partial class AdminPage : Page
     {
         if (((Button)s).Tag is not int id) return;
 
-        // حماية: لا يمكن إيقاف حسابك الحالي
-        if (id == App.CurrentUser!.UserId)
+        var currentU = App.CurrentUser;
+
+        // حماية: لا يمكن إيقاف حسابك الشخصي
+        if (id == currentU!.UserId)
         {
             MessageBox.Show("لا يمكنك إيقاف حسابك الشخصي أثناء تسجيل الدخول.",
                 "تنبيه", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
-        // حماية: لا يمكن إيقاف حساب المالك من قبل غير المالك
         try
         {
-            var targetRole = await _db.ExecuteScalarAsync<string>(
-                @"SELECT r.role_name FROM users u
-                  LEFT JOIN roles r ON u.role_id = r.role_id
-                  WHERE u.user_id = @id", new { id });
+            bool hasCreatedBy = await _db.ExecuteScalarAsync<int>(
+                "SELECT COUNT(*) FROM sys.columns WHERE object_id=OBJECT_ID('users') AND name='created_by'") > 0;
 
-            if (targetRole == "Owner" && App.CurrentUser.IsOwner != true)
+            var targetRow = await _db.QueryFirstOrDefaultAsync<dynamic>(
+                hasCreatedBy
+                    ? @"SELECT r.role_name, ISNULL(u.created_by,0) AS created_by
+                        FROM users u LEFT JOIN roles r ON u.role_id=r.role_id
+                        WHERE u.user_id=@id"
+                    : @"SELECT r.role_name, 0 AS created_by
+                        FROM users u LEFT JOIN roles r ON u.role_id=r.role_id
+                        WHERE u.user_id=@id",
+                new { id });
+
+            if (targetRow != null)
             {
-                MessageBox.Show("لا يمكنك تعطيل حساب مالك النظام.\nهذه الصلاحية محجوزة لمالك النظام فقط.",
-                    "غير مصرح", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
+                string targetRole = (string)(targetRow.role_name ?? "");
+                int    createdBy  = (int)targetRow.created_by;
+
+                if (targetRole == "Owner" && !currentU.IsOwner)
+                {
+                    MessageBox.Show("لا يمكنك تعطيل حساب مالك النظام.\nهذه الصلاحية محجوزة لمالك النظام فقط.",
+                        "غير مصرح", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                if (currentU.IsStrictManager && createdBy != currentU.UserId)
+                {
+                    MessageBox.Show("لا يمكنك إيقاف هذا المستخدم.\nيمكنك فقط إدارة الحسابات التي أنشأتها.",
+                        "غير مصرح", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
             }
         }
-        catch { /* تابع في حالة فشل الاستعلام */ }
+        catch { }
 
         await _db.ExecuteAsync(
             "UPDATE users SET is_active=CASE WHEN is_active=1 THEN 0 ELSE 1 END WHERE user_id=@id",
@@ -181,7 +314,9 @@ public partial class AdminPage : Page
 
     private async void BtnRefreshUsers_Click(object s, RoutedEventArgs e) => await LoadUsersAsync();
 
-    // ===== الطاولات =====
+    // ===================================================================
+    //  الطاولات
+    // ===================================================================
     private async Task LoadTablesAsync()
     {
         try
@@ -226,60 +361,62 @@ public partial class AdminPage : Page
 
     private async void BtnRefreshTables_Click(object s, RoutedEventArgs e) => await LoadTablesAsync();
 
-    // ===== الإعدادات =====
+    // ===================================================================
+    //  الإعدادات
+    // ===================================================================
     private async Task LoadSettingsAsync()
     {
         try
         {
-        SettingsPanel.Children.Clear();
-        var settings = await _db.QueryAsync<dynamic>(
-            "SELECT setting_key AS [key], value, description FROM settings ORDER BY setting_key");
+            SettingsPanel.Children.Clear();
+            var settings = await _db.QueryAsync<dynamic>(
+                "SELECT setting_key AS [key], value, description FROM settings ORDER BY setting_key");
 
-        foreach (var setting in settings)
-        {
-            var row = new StackPanel { Margin = new Thickness(0, 0, 0, 16) };
-            row.Children.Add(new TextBlock
+            foreach (var setting in settings)
             {
-                Text = $"{setting.key} — {setting.description ?? ""}",
-                Foreground = new System.Windows.Media.SolidColorBrush(
-                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#64748b")),
-                FontSize = 12, Margin = new Thickness(0, 0, 0, 4)
-            });
+                var row = new StackPanel { Margin = new Thickness(0, 0, 0, 16) };
+                row.Children.Add(new TextBlock
+                {
+                    Text = $"{setting.key} — {setting.description ?? ""}",
+                    Foreground = new System.Windows.Media.SolidColorBrush(
+                        (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#64748b")),
+                    FontSize = 12, Margin = new Thickness(0, 0, 0, 4)
+                });
 
-            var key = (string)setting.key;
-            var val = (string)(setting.value ?? "");
+                var key = (string)setting.key;
+                var val = (string)(setting.value ?? "");
 
-            var inp = new TextBox
-            {
-                Text = val, Tag = key,
-                Style = (Style)Application.Current.Resources["DarkInput"],
-                Height = 40
-            };
-            row.Children.Add(inp);
+                var inp = new TextBox
+                {
+                    Text = val, Tag = key,
+                    Style = (Style)Application.Current.Resources["DarkInput"],
+                    Height = 40
+                };
+                row.Children.Add(inp);
 
-            var saveBtn = new Button
-            {
-                Content = "حفظ", Tag = inp, Margin = new Thickness(0, 8, 0, 0),
-                Style = (Style)Application.Current.Resources["GhostButton"], Width = 80
-            };
-            saveBtn.Click += async (_, _) =>
-            {
-                var box = (TextBox)((Button)saveBtn).Tag!;
-                await _db.ExecuteAsync(
-                    "UPDATE settings SET value=@v WHERE setting_key=@k",
-                    new { v = box.Text, k = key });
-                MessageBox.Show("✅ تم الحفظ");
-            };
-            row.Children.Add(saveBtn);
+                var saveBtn = new Button
+                {
+                    Content = "حفظ", Tag = inp, Margin = new Thickness(0, 8, 0, 0),
+                    Style = (Style)Application.Current.Resources["GhostButton"], Width = 80
+                };
+                saveBtn.Click += async (_, _) =>
+                {
+                    var box = (TextBox)((Button)saveBtn).Tag!;
+                    await _db.ExecuteAsync(
+                        "UPDATE settings SET value=@v WHERE setting_key=@k",
+                        new { v = box.Text, k = key });
+                    MessageBox.Show("✅ تم الحفظ");
+                };
+                row.Children.Add(saveBtn);
 
-            SettingsPanel.Children.Add(row);
-            SettingsPanel.Children.Add(new Separator
-            {
-                Background = new System.Windows.Media.SolidColorBrush(
-                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#E2E8F0")),
-                Margin = new Thickness(0, 16, 0, 0)
-            });
-        }
+                SettingsPanel.Children.Add(row);
+                SettingsPanel.Children.Add(new Separator
+                {
+                    Background = new System.Windows.Media.SolidColorBrush(
+                        (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#E2E8F0")),
+                    Margin = new Thickness(0, 16, 0, 0)
+                });
+            }
         }
         catch (Exception ex)
         {
@@ -287,7 +424,9 @@ public partial class AdminPage : Page
         }
     }
 
-    // ===== بيانات الفرع =====
+    // ===================================================================
+    //  بيانات الفرع
+    // ===================================================================
     private void BtnOpenBranchSettings_Click(object s, RoutedEventArgs e)
     {
         try
@@ -302,7 +441,9 @@ public partial class AdminPage : Page
         }
     }
 
-    // ===== إدارة العملات =====
+    // ===================================================================
+    //  إدارة العملات
+    // ===================================================================
     private async Task LoadCurrenciesAsync()
     {
         try
@@ -368,7 +509,9 @@ public partial class AdminPage : Page
 
     private async void BtnRefreshCurrencies_Click(object s, RoutedEventArgs e) => await LoadCurrenciesAsync();
 
-    // ===== الأجهزة المسجلة =====
+    // ===================================================================
+    //  الأجهزة المسجلة
+    // ===================================================================
     private async Task LoadDevicesAsync()
     {
         TxtCurrentDevice.Text = DeviceLicenseService.GetCurrentFingerprint();
@@ -417,10 +560,11 @@ public partial class AdminPage : Page
             MessageBox.Show("يرجى تحديد جهاز أولاً.", "تنبيه", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
-        dynamic item = GridDevices.SelectedItem;
-        int deviceId = (int)item.device_id;
-        bool isActive = (bool)item.is_active;
-        string fp = (string)item.device_fp;
+        dynamic item   = GridDevices.SelectedItem;
+        int     deviceId = (int)item.device_id;
+        bool    isActive = (bool)item.is_active;
+        string  fp       = (string)item.device_fp;
+
         if (fp == DeviceLicenseService.GetCurrentFingerprint())
         {
             MessageBox.Show("لا يمكن إيقاف الجهاز الحالي.", "تنبيه",
@@ -436,7 +580,9 @@ public partial class AdminPage : Page
         await LoadDevicesAsync();
     }
 
-    // ===== جلسات الدخول =====
+    // ===================================================================
+    //  جلسات الدخول
+    // ===================================================================
     private async Task LoadSessionsAsync()
     {
         try
@@ -486,7 +632,9 @@ public partial class AdminPage : Page
 
     private async void BtnRefreshSessions_Click(object s, RoutedEventArgs e) => await LoadSessionsAsync();
 
-    // ===== نافذة الصلاحيات =====
+    // ===================================================================
+    //  نافذة الصلاحيات
+    // ===================================================================
     private void OpenPermissionsWindow()
     {
         try
@@ -501,7 +649,9 @@ public partial class AdminPage : Page
         }
     }
 
-    // ===== نافذة إعدادات الطابعات =====
+    // ===================================================================
+    //  نافذة إعدادات الطابعات
+    // ===================================================================
     private void OpenPrinterSettings()
     {
         try
@@ -516,9 +666,11 @@ public partial class AdminPage : Page
         }
     }
 
+    // ===================================================================
+    //  سجل الأحداث
+    // ===================================================================
     private async void BtnRefreshLogs_Click(object s, RoutedEventArgs e) => await LoadLogsAsync();
 
-    // ===== سجل الأحداث =====
     private async Task LoadLogsAsync()
     {
         try
@@ -539,7 +691,8 @@ public partial class AdminPage : Page
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"خطأ في تحميل سجل الأحداث:\n{ex.Message}", "خطأ", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show($"خطأ في تحميل سجل الأحداث:\n{ex.Message}",
+                "خطأ", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 }
