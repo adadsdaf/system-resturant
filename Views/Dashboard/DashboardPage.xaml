@@ -7,29 +7,138 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="20">
 
-            <!-- رأس الصفحة -->
-            <Grid Margin="0,0,0,20">
-                <StackPanel>
-                    <TextBlock x:Name="TxtGreeting" Text="مرحباً 👋"
-                               Foreground="{StaticResource TextPrimaryBrush}"
-                               FontSize="22" FontWeight="Bold"/>
-                    <TextBlock x:Name="TxtDate"
-                               Foreground="{StaticResource MutedBrush}" FontSize="13"/>
-                </StackPanel>
-                <Button Content="🔄  تحديث البيانات" HorizontalAlignment="Left"
-                        Style="{StaticResource GhostButton}"
-                        VerticalAlignment="Center" Click="BtnRefresh_Click"/>
-            </Grid>
+            <!-- ===== بانر الترخيص — بنمط itQAN ===== -->
+            <Border CornerRadius="14" Margin="0,0,0,20" Padding="0">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Color="#0F172A" Offset="0"/>
+                        <GradientStop Color="#1B4E9E" Offset="0.5"/>
+                        <GradientStop Color="#0F172A" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="20" ShadowDepth="4" Opacity="0.2" Color="#000000"/>
+                </Border.Effect>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
 
-            <!-- بطاقات الإحصائيات - صف 1 -->
-            <UniformGrid Columns="3" Margin="0,0,0,16">
-                <Border Margin="0,0,8,0" CornerRadius="12" Padding="20">
+                    <!-- معلومات الترخيص (يمين) -->
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="24,20">
+                        <TextBlock x:Name="TxtLicenseMsg"
+                                   Text="هذا النظام مرخص لـ —"
+                                   Foreground="#F7941D" FontSize="15" FontWeight="Bold"
+                                   Margin="0,0,0,4"/>
+                        <TextBlock x:Name="TxtRestaurantName"
+                                   Text="جارٍ التحميل..."
+                                   Foreground="White" FontSize="20" FontWeight="Bold"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                            <TextBlock Text="📍 " Foreground="#94A3B8" FontSize="11"/>
+                            <TextBlock x:Name="TxtBranchAddress" Text="—"
+                                       Foreground="#94A3B8" FontSize="11"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                            <TextBlock Text="📞 " Foreground="#94A3B8" FontSize="11"/>
+                            <TextBlock x:Name="TxtBranchPhone" Text="—"
+                                       Foreground="#94A3B8" FontSize="11"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- شعار itQAN (وسط) -->
+                    <StackPanel Grid.Column="1" HorizontalAlignment="Center"
+                                VerticalAlignment="Center" Margin="30,16">
+                        <Border Width="90" Height="90" CornerRadius="45" Margin="0,0,0,8">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="#F7941D" Offset="0"/>
+                                    <GradientStop Color="#1B4E9E" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <Image Source="pack://application:,,,/Assets/itqansoft_logo.png"
+                                   Width="70" Height="70"
+                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                        </Border>
+                        <TextBlock Text="itQAN Soft" Foreground="White"
+                                   FontSize="13" FontWeight="Bold"
+                                   HorizontalAlignment="Center"/>
+                        <TextBlock Text="Restaurant MS" Foreground="#F7941D"
+                                   FontSize="10" HorizontalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- معلومات المستخدم (يسار) -->
+                    <StackPanel Grid.Column="2" VerticalAlignment="Center"
+                                HorizontalAlignment="Left" Margin="24,20">
+                        <TextBlock x:Name="TxtGreeting" Text="مرحباً 👋"
+                                   Foreground="White" FontSize="16" FontWeight="Bold"
+                                   Margin="0,0,0,4"/>
+                        <TextBlock x:Name="TxtDate" Foreground="#94A3B8" FontSize="11"
+                                   Margin="0,0,0,8"/>
+                        <Border Background="#ffffff18" CornerRadius="6" Padding="10,4">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="📞 التواصل مع itQAN Soft: "
+                                           Foreground="#94A3B8" FontSize="11"/>
+                                <TextBlock x:Name="TxtItqanContact" Text="7774b3b7"
+                                           Foreground="#F7941D" FontSize="11" FontWeight="Bold"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Background="#ffffff18" CornerRadius="6" Padding="10,4" Margin="0,4,0,0">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="🔖 السنة المالية: "
+                                           Foreground="#94A3B8" FontSize="11"/>
+                                <TextBlock x:Name="TxtFinancialYear" Text="2025"
+                                           Foreground="White" FontSize="11" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- ===== أزرار الوصول السريع ===== -->
+            <Border Background="White" CornerRadius="12" Padding="16,12"
+                    BorderBrush="{StaticResource BorderBrush2}" BorderThickness="1"
+                    Margin="0,0,0,16">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="6" ShadowDepth="2" Opacity="0.05" Color="#000000"/>
+                </Border.Effect>
+                <StackPanel>
+                    <TextBlock Text="⚡  وصول سريع" Foreground="{StaticResource TextPrimaryBrush}"
+                               FontSize="13" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                    <WrapPanel>
+                        <Button Content="🛒  نقطة البيع"      Tag="Pos"          Click="QuickNav_Click"
+                                Style="{StaticResource PrimaryButton}" Margin="0,0,8,6" Width="130"/>
+                        <Button Content="👨‍🍳  المطبخ"          Tag="Kitchen"      Click="QuickNav_Click"
+                                Style="{StaticResource GhostButton}"  Margin="0,0,8,6" Width="130"/>
+                        <Button Content="📋  القائمة"          Tag="Menu"         Click="QuickNav_Click"
+                                Style="{StaticResource GhostButton}"  Margin="0,0,8,6" Width="130"/>
+                        <Button Content="📦  المخزون"          Tag="Inventory"    Click="QuickNav_Click"
+                                Style="{StaticResource GhostButton}"  Margin="0,0,8,6" Width="130"/>
+                        <Button Content="👥  العملاء"          Tag="Customers"    Click="QuickNav_Click"
+                                Style="{StaticResource GhostButton}"  Margin="0,0,8,6" Width="130"/>
+                        <Button Content="📅  الحجوزات"         Tag="Reservations" Click="QuickNav_Click"
+                                Style="{StaticResource GhostButton}"  Margin="0,0,8,6" Width="130"/>
+                        <Button Content="📈  التقارير"         Tag="Reports"      Click="QuickNav_Click"
+                                Style="{StaticResource GhostButton}"  Margin="0,0,8,6" Width="130"/>
+                        <Button Content="⚙️  الإدارة"          Tag="Admin"        Click="QuickNav_Click"
+                                Style="{StaticResource GhostButton}"  Margin="0,0,0,6"  Width="130"/>
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- ===== بطاقات الإحصائيات — صف 1 ===== -->
+            <UniformGrid Columns="3" Margin="0,0,0,12">
+                <Border Margin="0,0,6,0" CornerRadius="12" Padding="20">
                     <Border.Background>
                         <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                             <GradientStop Color="#1B4E9E" Offset="0"/>
                             <GradientStop Color="#0d3070" Offset="1"/>
                         </LinearGradientBrush>
                     </Border.Background>
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="10" ShadowDepth="3" Opacity="0.15" Color="#000000"/>
+                    </Border.Effect>
                     <StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                             <Border Background="#ffffff22" CornerRadius="10" Width="44" Height="44">
@@ -37,11 +146,11 @@
                             </Border>
                             <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
                                 <TextBlock Text="مبيعات اليوم" Foreground="#ffffffaa" FontSize="12"/>
-                                <TextBlock Text="اليوم" Foreground="#ffffff66" FontSize="10"/>
+                                <TextBlock Text="الإجمالي المكتمل" Foreground="#ffffff66" FontSize="10"/>
                             </StackPanel>
                         </StackPanel>
                         <TextBlock x:Name="TxtSalesToday" Text="0.00 ريال"
-                                   Foreground="White" FontSize="24" FontWeight="Bold"/>
+                                   Foreground="White" FontSize="22" FontWeight="Bold"/>
                         <TextBlock x:Name="TxtOrdersToday" Text="0 طلب مكتمل"
                                    Foreground="#ffffff88" FontSize="12" Margin="0,4,0,0"/>
                     </StackPanel>
@@ -54,6 +163,9 @@
                             <GradientStop Color="#c4700a" Offset="1"/>
                         </LinearGradientBrush>
                     </Border.Background>
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="10" ShadowDepth="3" Opacity="0.15" Color="#000000"/>
+                    </Border.Effect>
                     <StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                             <Border Background="#ffffff22" CornerRadius="10" Width="44" Height="44">
@@ -61,7 +173,7 @@
                             </Border>
                             <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
                                 <TextBlock Text="طلبات المطبخ" Foreground="#ffffffaa" FontSize="12"/>
-                                <TextBlock Text="قيد التحضير" Foreground="#ffffff66" FontSize="10"/>
+                                <TextBlock Text="قيد التحضير الآن" Foreground="#ffffff66" FontSize="10"/>
                             </StackPanel>
                         </StackPanel>
                         <TextBlock x:Name="TxtPendingKitchen" Text="0"
@@ -71,13 +183,16 @@
                     </StackPanel>
                 </Border>
 
-                <Border Margin="8,0,0,0" CornerRadius="12" Padding="20">
+                <Border Margin="6,0,0,0" CornerRadius="12" Padding="20">
                     <Border.Background>
                         <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                             <GradientStop Color="#DC2626" Offset="0"/>
                             <GradientStop Color="#991b1b" Offset="1"/>
                         </LinearGradientBrush>
                     </Border.Background>
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="10" ShadowDepth="3" Opacity="0.15" Color="#000000"/>
+                    </Border.Effect>
                     <StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                             <Border Background="#ffffff22" CornerRadius="10" Width="44" Height="44">
@@ -96,15 +211,15 @@
                 </Border>
             </UniformGrid>
 
-            <!-- بطاقات - صف 2 -->
-            <UniformGrid Columns="4" Margin="0,0,0,20">
+            <!-- ===== بطاقات — صف 2 ===== -->
+            <UniformGrid Columns="4" Margin="0,0,0,16">
                 <Border Margin="0,0,6,0" Background="White" CornerRadius="10"
                         Padding="16" BorderBrush="{StaticResource BorderBrush2}" BorderThickness="1">
                     <Border.Effect>
                         <DropShadowEffect BlurRadius="6" ShadowDepth="2" Opacity="0.06" Color="#000000"/>
                     </Border.Effect>
                     <StackPanel>
-                        <TextBlock Text="📋" FontSize="24" Margin="0,0,0,8"/>
+                        <TextBlock Text="📋" FontSize="24" Margin="0,0,0,6"/>
                         <TextBlock x:Name="TxtActiveItems" Text="0"
                                    Foreground="{StaticResource AccentBrush}" FontSize="22" FontWeight="Bold"/>
                         <TextBlock Text="صنف في القائمة"
@@ -118,7 +233,7 @@
                         <DropShadowEffect BlurRadius="6" ShadowDepth="2" Opacity="0.06" Color="#000000"/>
                     </Border.Effect>
                     <StackPanel>
-                        <TextBlock Text="📅" FontSize="24" Margin="0,0,0,8"/>
+                        <TextBlock Text="📅" FontSize="24" Margin="0,0,0,6"/>
                         <TextBlock x:Name="TxtReservations" Text="0"
                                    Foreground="{StaticResource BlueBrush}" FontSize="22" FontWeight="Bold"/>
                         <TextBlock Text="حجز اليوم"
@@ -132,7 +247,7 @@
                         <DropShadowEffect BlurRadius="6" ShadowDepth="2" Opacity="0.06" Color="#000000"/>
                     </Border.Effect>
                     <StackPanel>
-                        <TextBlock Text="👥" FontSize="24" Margin="0,0,0,8"/>
+                        <TextBlock Text="👥" FontSize="24" Margin="0,0,0,6"/>
                         <TextBlock x:Name="TxtCustomers" Text="0"
                                    Foreground="{StaticResource SuccessBrush}" FontSize="22" FontWeight="Bold"/>
                         <TextBlock Text="عميل مسجّل"
@@ -146,7 +261,7 @@
                         <DropShadowEffect BlurRadius="6" ShadowDepth="2" Opacity="0.06" Color="#000000"/>
                     </Border.Effect>
                     <StackPanel>
-                        <TextBlock Text="📦" FontSize="24" Margin="0,0,0,8"/>
+                        <TextBlock Text="📦" FontSize="24" Margin="0,0,0,6"/>
                         <TextBlock x:Name="TxtIngredients" Text="0"
                                    Foreground="#7C3AED" FontSize="22" FontWeight="Bold"/>
                         <TextBlock Text="مادة في المخزون"
@@ -155,43 +270,98 @@
                 </Border>
             </UniformGrid>
 
-            <!-- آخر الطلبات -->
-            <Border Background="White" CornerRadius="12"
-                    Padding="20" BorderBrush="{StaticResource BorderBrush2}" BorderThickness="1">
-                <Border.Effect>
-                    <DropShadowEffect BlurRadius="8" ShadowDepth="2" Opacity="0.06" Color="#000000"/>
-                </Border.Effect>
-                <StackPanel>
-                    <Grid Margin="0,0,0,16">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="آخر الطلبات"
-                                       Foreground="{StaticResource TextPrimaryBrush}"
-                                       FontSize="15" FontWeight="Bold"/>
-                            <Border Background="{StaticResource SurfaceBrush}" CornerRadius="20"
-                                    Padding="10,3" Margin="12,0,0,0"
-                                    BorderBrush="{StaticResource BorderBrush2}" BorderThickness="1">
-                                <TextBlock x:Name="TxtOrderCount" Text="0"
-                                           Foreground="{StaticResource AccentBrush}"
-                                           FontSize="12" FontWeight="Bold"/>
-                            </Border>
-                        </StackPanel>
-                        <Button Content="عرض الكل ←" Style="{StaticResource GhostButton}"
-                                HorizontalAlignment="Left" FontSize="12"/>
-                    </Grid>
+            <!-- ===== آخر الطلبات + معلومات العملات ===== -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="8"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
 
-                    <DataGrid x:Name="GridOrders" Style="{StaticResource DataGridStyle}"
-                              AutoGenerateColumns="False" MaxHeight="280">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="رقم"         Binding="{Binding order_id}"       Width="70"/>
-                            <DataGridTextColumn Header="العميل"      Binding="{Binding customer_name}"  Width="*"/>
-                            <DataGridTextColumn Header="الإجمالي"    Binding="{Binding total_fmt}"      Width="120"/>
-                            <DataGridTextColumn Header="طريقة الدفع" Binding="{Binding payment_method}" Width="110"/>
-                            <DataGridTextColumn Header="الكاشير"     Binding="{Binding served_by}"      Width="130"/>
-                            <DataGridTextColumn Header="الوقت"       Binding="{Binding time_fmt}"       Width="130"/>
-                        </DataGrid.Columns>
-                    </DataGrid>
-                </StackPanel>
-            </Border>
+                <!-- آخر الطلبات -->
+                <Border Grid.Column="0" Background="White" CornerRadius="12"
+                        Padding="20" BorderBrush="{StaticResource BorderBrush2}" BorderThickness="1">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="8" ShadowDepth="2" Opacity="0.06" Color="#000000"/>
+                    </Border.Effect>
+                    <StackPanel>
+                        <Grid Margin="0,0,0,14">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="آخر الطلبات"
+                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                           FontSize="14" FontWeight="Bold"/>
+                                <Border Background="{StaticResource SurfaceBrush}" CornerRadius="20"
+                                        Padding="10,3" Margin="10,0,0,0"
+                                        BorderBrush="{StaticResource BorderBrush2}" BorderThickness="1">
+                                    <TextBlock x:Name="TxtOrderCount" Text="0"
+                                               Foreground="{StaticResource AccentBrush}"
+                                               FontSize="12" FontWeight="Bold"/>
+                                </Border>
+                            </StackPanel>
+                            <Button Content="🔄 تحديث" Style="{StaticResource GhostButton}"
+                                    HorizontalAlignment="Left" FontSize="11"
+                                    Click="BtnRefresh_Click"/>
+                        </Grid>
+
+                        <DataGrid x:Name="GridOrders" Style="{StaticResource DataGridStyle}"
+                                  AutoGenerateColumns="False" MaxHeight="260">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="رقم"      Binding="{Binding order_id}"       Width="60"/>
+                                <DataGridTextColumn Header="العميل"   Binding="{Binding customer_name}"  Width="*"/>
+                                <DataGridTextColumn Header="الإجمالي" Binding="{Binding total_fmt}"      Width="110"/>
+                                <DataGridTextColumn Header="الدفع"    Binding="{Binding payment_method}" Width="90"/>
+                                <DataGridTextColumn Header="الكاشير"  Binding="{Binding served_by}"      Width="110"/>
+                                <DataGridTextColumn Header="الوقت"    Binding="{Binding time_fmt}"       Width="110"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </StackPanel>
+                </Border>
+
+                <!-- العملات -->
+                <Border Grid.Column="2" Background="White" CornerRadius="12"
+                        Padding="16" BorderBrush="{StaticResource BorderBrush2}" BorderThickness="1">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="8" ShadowDepth="2" Opacity="0.06" Color="#000000"/>
+                    </Border.Effect>
+                    <StackPanel>
+                        <TextBlock Text="💱  أسعار الصرف" Foreground="{StaticResource TextPrimaryBrush}"
+                                   FontSize="13" FontWeight="Bold" Margin="0,0,0,12"/>
+                        <TextBlock x:Name="TxtLocalCurrency" Text="العملة الأساسية: ريال سعودي"
+                                   Foreground="#F7941D" FontSize="11" FontWeight="SemiBold"
+                                   Margin="0,0,0,8"/>
+                        <ItemsControl x:Name="CurrencyList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="0,0,0,6" Background="#F8FAFC"
+                                            CornerRadius="6" Padding="10,8"
+                                            BorderBrush="#E2E8F0" BorderThickness="1">
+                                        <Grid>
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding name}" FontWeight="SemiBold"
+                                                           Foreground="#1E293B" FontSize="12"/>
+                                                <TextBlock Text="{Binding code}" Foreground="#64748B"
+                                                           FontSize="10"/>
+                                            </StackPanel>
+                                            <TextBlock Text="{Binding rate_fmt}"
+                                                       HorizontalAlignment="Left"
+                                                       VerticalAlignment="Center"
+                                                       Foreground="#1B4E9E" FontWeight="Bold"
+                                                       FontSize="13"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <TextBlock Margin="0,12,0,0" HorizontalAlignment="Center"
+                       Foreground="{StaticResource MutedBrush}" FontSize="10">
+                <Run Text="itQAN Soft — نظام إدارة المطاعم — Enterprise Resource Planning"/>
+                <Run Text=" | "/>
+                <Run x:Name="TxtVersion" Text="V1.0.0"/>
+            </TextBlock>
 
         </StackPanel>
     </ScrollViewer>

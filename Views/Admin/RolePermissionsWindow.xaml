@@ -1,0 +1,68 @@
+<Window x:Class="RestaurantMS.Desktop.Views.Admin.RolePermissionsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="إدارة صلاحيات الأدوار"
+        Width="680" Height="600"
+        WindowStartupLocation="CenterOwner"
+        WindowStyle="None" AllowsTransparency="True"
+        FlowDirection="RightToLeft"
+        Background="Transparent">
+    <Border Background="White" CornerRadius="12" Margin="8">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="24" ShadowDepth="6" Opacity="0.14" Color="#000000"/>
+        </Border.Effect>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50"/>
+                <RowDefinition Height="60"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="60"/>
+            </Grid.RowDefinitions>
+
+            <!-- شريط العنوان -->
+            <Border Grid.Row="0" Background="#1B4E9E" CornerRadius="12,12,0,0"
+                    MouseLeftButtonDown="TitleBar_MouseDown">
+                <Grid>
+                    <TextBlock Text="🔒  إدارة صلاحيات الأدوار" Foreground="White"
+                               VerticalAlignment="Center" Margin="16,0" FontSize="15" FontWeight="SemiBold"/>
+                    <Button Content="✕" HorizontalAlignment="Left" VerticalAlignment="Center"
+                            Margin="12,0" Width="30" Height="30"
+                            Background="Transparent" Foreground="White" BorderThickness="0"
+                            FontSize="14" Cursor="Hand" Click="BtnClose_Click"/>
+                </Grid>
+            </Border>
+
+            <!-- اختيار الدور -->
+            <Border Grid.Row="1" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="0,0,0,1"
+                    Padding="16,0">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="الدور:" VerticalAlignment="Center" Foreground="#475569"
+                               FontWeight="SemiBold" Margin="0,0,10,0"/>
+                    <ComboBox x:Name="CmbRoles" Width="200" Height="36"
+                              SelectionChanged="CmbRoles_SelectionChanged"/>
+                    <TextBlock Margin="20,0,0,0" VerticalAlignment="Center" Foreground="#64748B"
+                               FontSize="12"
+                               Text="✅ علّم الصفحات التي يحق للدور المحدد الوصول إليها"/>
+                </StackPanel>
+            </Border>
+
+            <!-- جدول الصلاحيات -->
+            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Padding="16">
+                <StackPanel x:Name="PermissionsPanel"/>
+            </ScrollViewer>
+
+            <!-- أزرار الحفظ -->
+            <Border Grid.Row="3" BorderBrush="#E2E8F0" BorderThickness="0,1,0,0"
+                    Background="#F8FAFC" CornerRadius="0,0,12,12" Padding="16,0">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+                    <Button Content="💾  حفظ صلاحيات هذا الدور" Style="{StaticResource PrimaryButton}"
+                            Width="200" Click="BtnSave_Click" Margin="0,0,10,0"/>
+                    <Button Content="↩  إعادة تعيين للافتراضي" Style="{StaticResource GhostButton}"
+                            Width="170" Click="BtnReset_Click" Margin="0,0,10,0"/>
+                    <Button Content="إغلاق" Style="{StaticResource GhostButton}"
+                            Width="90" Click="BtnClose_Click"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

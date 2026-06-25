@@ -1,5 +1,6 @@
 using RestaurantMS.Desktop.Data;
 using RestaurantMS.Desktop.Models;
+using RestaurantMS.Desktop.Services;
 using RestaurantMS.Desktop.Views.Owner;
 using System.Windows;
 using System.Windows.Input;
@@ -98,18 +99,36 @@ public partial class LoginWindow : Window
                 return;
             }
 
+            // ===== التحقق من تسجيل الجهاز =====
+            var (deviceAllowed, deviceMsg) = await DeviceLicenseService.EnsureDeviceRegisteredAsync(_db);
+            if (!deviceAllowed)
+            {
+                ShowError(deviceMsg);
+                return;
+            }
+
+            // ===== تحميل الصلاحيات =====
+            int roleId      = (int)user.role_id;
+            string roleName = (string)(user.role_name ?? "Cashier");
+            var permissions = await PermissionsService.LoadPermissionsAsync(_db, roleId, roleName);
+
             await _db.ExecuteAsync(
                 "UPDATE users SET last_login = GETDATE() WHERE user_id = @id",
                 new { id = (int)user.user_id });
 
+            // ===== تسجيل جلسة الدخول =====
+            await LogSessionAsync((int)user.user_id, (string)user.username);
+
             App.CurrentUser = new CurrentUser
             {
                 UserId     = (int)user.user_id,
+                RoleId     = roleId,
                 Username   = (string)user.username,
                 FullName   = (string)user.full_name,
-                RoleName   = (string)(user.role_name ?? "Cashier"),
+                RoleName   = roleName,
                 BranchName = (string)(user.branch_name ?? ""),
-                BranchId   = (int)(user.branch_id ?? 1)
+                BranchId   = (int)(user.branch_id ?? 1),
+                Permissions = permissions
             };
 
             var main = new MainWindow();
@@ -124,6 +143,26 @@ public partial class LoginWindow : Window
         {
             SetLoading(false);
         }
+    }
+
+    private async Task LogSessionAsync(int userId, string username)
+    {
+        try
+        {
+            var tableExists = await _db.ExecuteScalarAsync<int>(
+                "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME='sessions_log'");
+            if (tableExists == 0) return;
+
+            var fp        = DeviceLicenseService.GetCurrentFingerprint();
+            var ip        = DeviceLicenseService.GetLocalIpAddress();
+            var devName   = Environment.MachineName;
+
+            await _db.ExecuteAsync(
+                @"INSERT INTO sessions_log (user_id, username, device_name, device_fp, ip_address, login_time, session_status)
+                  VALUES (@uid, @uname, @dev, @fp, @ip, GETDATE(), N'نشط')",
+                new { uid = userId, uname = username, dev = devName, fp, ip });
+        }
+        catch { /* تسجيل الجلسة لا يجب أن يوقف عملية الدخول */ }
     }
 
     private void BtnOwnerPortal_Click(object sender, RoutedEventArgs e)

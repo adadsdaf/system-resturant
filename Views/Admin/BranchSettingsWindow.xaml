@@ -1,0 +1,195 @@
+<Window x:Class="RestaurantMS.Desktop.Views.Admin.BranchSettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="بيانات الفرع" Width="720" Height="680"
+        WindowStartupLocation="CenterOwner"
+        WindowStyle="None" AllowsTransparency="True"
+        FlowDirection="RightToLeft" Background="Transparent">
+    <Border Background="White" CornerRadius="12" Margin="8">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="24" ShadowDepth="6" Opacity="0.14" Color="#000000"/>
+        </Border.Effect>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="60"/>
+            </Grid.RowDefinitions>
+
+            <!-- شريط العنوان -->
+            <Border Grid.Row="0" CornerRadius="12,12,0,0" MouseLeftButtonDown="TitleBar_MouseDown">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Color="#1B4E9E" Offset="0"/>
+                        <GradientStop Color="#0d3070" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+                <Grid>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0">
+                        <TextBlock Text="🏪" FontSize="16" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBlock Text="بيانات الفرع" Foreground="White" FontSize="15" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="TxtBranchSubtitle" Text="  —  الفرع الرئيسي"
+                                   Foreground="#ffffff88" FontSize="13" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <Button Content="✕" HorizontalAlignment="Left" VerticalAlignment="Center"
+                            Margin="12,0" Width="30" Height="30"
+                            Background="Transparent" Foreground="White" BorderThickness="0"
+                            FontSize="14" Cursor="Hand" Click="BtnClose_Click"/>
+                </Grid>
+            </Border>
+
+            <!-- المحتوى -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="20,16">
+                <StackPanel>
+
+                    <!-- === القسم 1: بيانات أساسية === -->
+                    <TextBlock Text="البيانات الأساسية" FontSize="13" FontWeight="Bold"
+                               Foreground="#1B4E9E" Margin="0,0,0,10"/>
+                    <Border Background="#F0F7FF" BorderBrush="#BFDBFE" BorderThickness="1"
+                            CornerRadius="8" Padding="16" Margin="0,0,0,16">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="10"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="10"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- رقم الفرع + اسم عربي -->
+                            <StackPanel Grid.Row="0" Grid.Column="0">
+                                <TextBlock Text="رقم الفرع" Foreground="#64748B" FontSize="12" Margin="0,0,0,4"/>
+                                <TextBox x:Name="TxtBranchCode" Height="36" Style="{StaticResource DarkInput}"/>
+                            </StackPanel>
+                            <StackPanel Grid.Row="0" Grid.Column="2">
+                                <TextBlock Text="السنة المالية" Foreground="#64748B" FontSize="12" Margin="0,0,0,4"/>
+                                <TextBox x:Name="TxtFinancialYear" Height="36" Style="{StaticResource DarkInput}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="2" Grid.Column="0">
+                                <TextBlock Text="اسم الفرع (عربي) *" Foreground="#64748B" FontSize="12" Margin="0,0,0,4"/>
+                                <TextBox x:Name="TxtArabicName" Height="36" Style="{StaticResource DarkInput}"/>
+                            </StackPanel>
+                            <StackPanel Grid.Row="2" Grid.Column="2">
+                                <TextBlock Text="اسم الفرع (أجنبي)" Foreground="#64748B" FontSize="12" Margin="0,0,0,4"/>
+                                <TextBox x:Name="TxtEnglishName" Height="36" Style="{StaticResource DarkInput}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="4" Grid.Column="0">
+                                <TextBlock Text="اسم المدير" Foreground="#64748B" FontSize="12" Margin="0,0,0,4"/>
+                                <TextBox x:Name="TxtManagerName" Height="36" Style="{StaticResource DarkInput}"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- === القسم 2: العناوين === -->
+                    <TextBlock Text="العناوين والاتصال" FontSize="13" FontWeight="Bold"
+                               Foreground="#1B4E9E" Margin="0,0,0,10"/>
+                    <Border Background="#F0F7FF" BorderBrush="#BFDBFE" BorderThickness="1"
+                            CornerRadius="8" Padding="16" Margin="0,0,0,16">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="10"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="10"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="10"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <StackPanel Grid.Row="0" Grid.Column="0">
+                                <TextBlock Text="العنوان العربي" Foreground="#64748B" FontSize="12" Margin="0,0,0,4"/>
+                                <TextBox x:Name="TxtAddress" Height="36" Style="{StaticResource DarkInput}"/>
+                            </StackPanel>
+                            <StackPanel Grid.Row="0" Grid.Column="2">
+                                <TextBlock Text="العنوان الأجنبي" Foreground="#64748B" FontSize="12" Margin="0,0,0,4"/>
+                                <TextBox x:Name="TxtAddressEn" Height="36" Style="{StaticResource DarkInput}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="2" Grid.Column="0">
+                                <TextBlock Text="رقم الهاتف" Foreground="#64748B" FontSize="12" Margin="0,0,0,4"/>
+                                <TextBox x:Name="TxtPhone" Height="36" Style="{StaticResource DarkInput}"/>
+                            </StackPanel>
+                            <StackPanel Grid.Row="2" Grid.Column="2">
+                                <TextBlock Text="رقم الفاكس" Foreground="#64748B" FontSize="12" Margin="0,0,0,4"/>
+                                <TextBox x:Name="TxtFax" Height="36" Style="{StaticResource DarkInput}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="4" Grid.Column="0">
+                                <TextBlock Text="صندوق البريد (P.O. Box)" Foreground="#64748B" FontSize="12" Margin="0,0,0,4"/>
+                                <TextBox x:Name="TxtPoBox" Height="36" Style="{StaticResource DarkInput}"/>
+                            </StackPanel>
+                            <StackPanel Grid.Row="4" Grid.Column="2">
+                                <TextBlock Text="البريد الإلكتروني" Foreground="#64748B" FontSize="12" Margin="0,0,0,4"/>
+                                <TextBox x:Name="TxtEmail" Height="36" Style="{StaticResource DarkInput}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="3">
+                                <TextBlock Text="موقع الإنترنت (Website)" Foreground="#64748B" FontSize="12" Margin="0,0,0,4"/>
+                                <TextBox x:Name="TxtWebsite" Height="36" Style="{StaticResource DarkInput}"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- === القسم 3: بيانات قانونية وضريبية === -->
+                    <TextBlock Text="البيانات القانونية والضريبية" FontSize="13" FontWeight="Bold"
+                               Foreground="#1B4E9E" Margin="0,0,0,10"/>
+                    <Border Background="#FFF7ED" BorderBrush="#FED7AA" BorderThickness="1"
+                            CornerRadius="8" Padding="16" Margin="0,0,0,16">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="10"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <StackPanel Grid.Row="0" Grid.Column="0">
+                                <TextBlock Text="اسم الضريبة (مثال: ضريبة القيمة المضافة)"
+                                           Foreground="#64748B" FontSize="12" Margin="0,0,0,4"/>
+                                <TextBox x:Name="TxtTaxName" Height="36" Style="{StaticResource DarkInput}"/>
+                            </StackPanel>
+                            <StackPanel Grid.Row="0" Grid.Column="2">
+                                <TextBlock Text="الرقم الضريبي" Foreground="#64748B" FontSize="12" Margin="0,0,0,4"/>
+                                <TextBox x:Name="TxtTaxNumber" Height="36" Style="{StaticResource DarkInput}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3">
+                                <TextBlock Text="رقم التسجيل التجاري (Commercial Registration)"
+                                           Foreground="#64748B" FontSize="12" Margin="0,0,0,4"/>
+                                <TextBox x:Name="TxtCommercialReg" Height="36" Style="{StaticResource DarkInput}"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- أزرار الحفظ -->
+            <Border Grid.Row="2" BorderBrush="#E2E8F0" BorderThickness="0,1,0,0"
+                    Background="#F8FAFC" CornerRadius="0,0,12,12" Padding="16,0">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+                    <Button Content="💾  حفظ البيانات" Style="{StaticResource PrimaryButton}"
+                            Width="160" Click="BtnSave_Click" Margin="0,0,10,0"/>
+                    <Button Content="إلغاء" Style="{StaticResource GhostButton}"
+                            Width="90" Click="BtnClose_Click"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

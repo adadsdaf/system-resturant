@@ -10,12 +10,18 @@
         </Grid.RowDefinitions>
 
         <!-- تبويبات الإدارة -->
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,14">
-            <Button Content="👤  المستخدمون" Tag="Users"    Click="TabBtn_Click" Style="{StaticResource PrimaryButton}" Margin="0,0,6,0"/>
-            <Button Content="🏪  الطاولات"  Tag="Tables"   Click="TabBtn_Click" Style="{StaticResource GhostButton}"   Margin="0,0,6,0"/>
-            <Button Content="⚙️  الإعدادات" Tag="Settings" Click="TabBtn_Click" Style="{StaticResource GhostButton}"   Margin="0,0,6,0"/>
-            <Button Content="📝  سجل الأحداث" Tag="Logs"  Click="TabBtn_Click" Style="{StaticResource GhostButton}"/>
-        </StackPanel>
+        <WrapPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,14">
+            <Button Content="👤  المستخدمون"   Tag="Users"       Click="TabBtn_Click" Style="{StaticResource PrimaryButton}" Margin="0,0,6,0"/>
+            <Button Content="🏪  الطاولات"     Tag="Tables"      Click="TabBtn_Click" Style="{StaticResource GhostButton}"   Margin="0,0,6,0"/>
+            <Button Content="⚙️  الإعدادات"    Tag="Settings"    Click="TabBtn_Click" Style="{StaticResource GhostButton}"   Margin="0,0,6,0"/>
+            <Button Content="🏬  بيانات الفرع" Tag="Branch"      Click="TabBtn_Click" Style="{StaticResource GhostButton}"   Margin="0,0,6,0"/>
+            <Button Content="💱  العملات"      Tag="Currencies"  Click="TabBtn_Click" Style="{StaticResource GhostButton}"   Margin="0,0,6,0"/>
+            <Button Content="🖥  الأجهزة"       Tag="Devices"     Click="TabBtn_Click" Style="{StaticResource GhostButton}"   Margin="0,0,6,0"/>
+            <Button Content="🔒  الصلاحيات"    Tag="Permissions" Click="TabBtn_Click" Style="{StaticResource GhostButton}"   Margin="0,0,6,0"/>
+            <Button Content="🖨  الطابعات"      Tag="Printers"    Click="TabBtn_Click" Style="{StaticResource GhostButton}"   Margin="0,0,6,0"/>
+            <Button Content="🕐  جلسات الدخول" Tag="Sessions"    Click="TabBtn_Click" Style="{StaticResource GhostButton}"   Margin="0,0,6,0"/>
+            <Button Content="📝  سجل الأحداث"  Tag="Logs"        Click="TabBtn_Click" Style="{StaticResource GhostButton}"/>
+        </WrapPanel>
 
         <!-- محتوى التبويب -->
         <Border Grid.Row="1" Style="{StaticResource Card}">
@@ -96,6 +102,136 @@
                 <ScrollViewer x:Name="PanelSettings" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
                     <StackPanel x:Name="SettingsPanel" Margin="0,0,0,16" MaxWidth="560"/>
                 </ScrollViewer>
+
+                <!-- بيانات الفرع -->
+                <Grid x:Name="PanelBranch" Visibility="Collapsed">
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,30">
+                        <TextBlock Text="🏬" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,16"/>
+                        <TextBlock Text="بيانات وإعدادات الفرع" FontSize="18" FontWeight="Bold"
+                                   Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Center"
+                                   Margin="0,0,0,8"/>
+                        <TextBlock Text="أدخل بيانات الفرع الكاملة: الاسم، العنوان، الضريبة، التسجيل التجاري والمزيد"
+                                   Foreground="{StaticResource MutedBrush}" FontSize="13"
+                                   HorizontalAlignment="Center" TextAlignment="Center"
+                                   Margin="0,0,0,24"/>
+                        <Button Content="📝  فتح نموذج بيانات الفرع" Style="{StaticResource PrimaryButton}"
+                                Width="240" Height="44" Click="BtnOpenBranchSettings_Click"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- إدارة العملات -->
+                <Grid x:Name="PanelCurrencies" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- رأس -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
+                        <Button Content="＋  عملة جديدة" Style="{StaticResource PrimaryButton}"
+                                Click="BtnAddCurrency_Click" Margin="0,0,8,0"/>
+                        <Button Content="🔄 تحديث" Style="{StaticResource GhostButton}"
+                                Click="BtnRefreshCurrencies_Click"/>
+                    </StackPanel>
+
+                    <!-- بطاقة معلومات -->
+                    <Border Grid.Row="1" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1"
+                            CornerRadius="8" Padding="12,8" Margin="0,0,0,12">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="💡  " FontSize="13"/>
+                            <TextBlock TextWrapping="Wrap" Foreground="#1D4ED8" FontSize="12">
+                                <Run Text="حدّد العملة الأساسية (المحلية) لتحديد العملة الافتراضية في التقارير والفواتير."/>
+                                <Run Text=" سعر الصرف يُعبّر عن قيمة 1 وحدة من العملة الأجنبية بالعملة المحلية."/>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- جدول العملات -->
+                    <DataGrid Grid.Row="2" x:Name="GridCurrencies" Style="{StaticResource DataGridStyle}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="#"              Binding="{Binding currency_id}"     Width="50"/>
+                            <DataGridTextColumn Header="اسم العملة"    Binding="{Binding currency_name}"   Width="*"/>
+                            <DataGridTextColumn Header="الرمز"          Binding="{Binding currency_code}"   Width="80"/>
+                            <DataGridTextColumn Header="الرمز المختصر" Binding="{Binding currency_symbol}" Width="80"/>
+                            <DataGridTextColumn Header="سعر الصرف"     Binding="{Binding rate_fmt}"        Width="130"/>
+                            <DataGridTextColumn Header="النوع"          Binding="{Binding type_txt}"        Width="110"/>
+                            <DataGridTextColumn Header="الحالة"         Binding="{Binding status_txt}"      Width="90"/>
+                            <DataGridTemplateColumn Header="إجراءات" Width="160">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Content="تعديل" Tag="{Binding}" Style="{StaticResource GhostButton}"
+                                                    FontSize="12" Margin="0,0,4,0" Click="BtnEditCurrency_Click"/>
+                                            <Button Content="حذف" Tag="{Binding currency_id}"
+                                                    Style="{StaticResource DangerButton}" FontSize="12"
+                                                    Click="BtnDeleteCurrency_Click"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+
+                <!-- الأجهزة المسجلة -->
+                <Grid x:Name="PanelDevices" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+                        <Button Content="🔄 تحديث" Style="{StaticResource GhostButton}" Click="BtnRefreshDevices_Click" Margin="0,0,8,0"/>
+                        <Button Content="⛔ إيقاف الجهاز" Style="{StaticResource DangerButton}" Click="BtnToggleDevice_Click"/>
+                    </StackPanel>
+                    <Border Grid.Row="1" Background="#FFF7ED" BorderBrush="#F7941D" BorderThickness="1"
+                            CornerRadius="6" Padding="10,8" Margin="0,0,0,10">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🖥  بصمة هذا الجهاز: " FontWeight="SemiBold"
+                                       Foreground="#92400E" FontSize="12"/>
+                            <TextBlock x:Name="TxtCurrentDevice" Foreground="#78350F"
+                                       FontFamily="Consolas" FontSize="12" FontWeight="Bold"/>
+                        </StackPanel>
+                    </Border>
+                    <DataGrid Grid.Row="2" x:Name="GridDevices" Style="{StaticResource DataGridStyle}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="#"            Binding="{Binding device_id}"   Width="50"/>
+                            <DataGridTextColumn Header="اسم الجهاز"   Binding="{Binding device_name}" Width="*"/>
+                            <DataGridTextColumn Header="البصمة"        Binding="{Binding device_fp}"  Width="150"/>
+                            <DataGridTextColumn Header="عنوان IP"      Binding="{Binding ip_address}"  Width="120"/>
+                            <DataGridTextColumn Header="أول تسجيل"    Binding="{Binding first_seen}"  Width="130"/>
+                            <DataGridTextColumn Header="آخر ظهور"     Binding="{Binding last_seen}"   Width="130"/>
+                            <DataGridTextColumn Header="الحالة"        Binding="{Binding status_txt}"  Width="90"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+
+                <!-- جلسات الدخول -->
+                <Grid x:Name="PanelSessions" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
+                        <Button Content="🔄 تحديث" Style="{StaticResource GhostButton}"
+                                Click="BtnRefreshSessions_Click"/>
+                        <TextBlock x:Name="TxtActiveSessionsCount"
+                                   Foreground="{StaticResource AccentBrush}" FontSize="12" FontWeight="Bold"
+                                   VerticalAlignment="Center" Margin="12,0,0,0"/>
+                    </StackPanel>
+                    <DataGrid Grid.Row="1" x:Name="GridSessions" Style="{StaticResource DataGridStyle}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="#"            Binding="{Binding session_id}"   Width="50"/>
+                            <DataGridTextColumn Header="المستخدم"    Binding="{Binding username}"     Width="120"/>
+                            <DataGridTextColumn Header="اسم الجهاز"  Binding="{Binding device_name}"  Width="*"/>
+                            <DataGridTextColumn Header="عنوان IP"    Binding="{Binding ip_address}"   Width="120"/>
+                            <DataGridTextColumn Header="وقت الدخول"  Binding="{Binding login_time}"   Width="150"/>
+                            <DataGridTextColumn Header="وقت الخروج"  Binding="{Binding logout_time}"  Width="150"/>
+                            <DataGridTextColumn Header="الحالة"       Binding="{Binding status}"       Width="90"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
 
                 <!-- سجل الأحداث -->
                 <Grid x:Name="PanelLogs" Visibility="Collapsed">

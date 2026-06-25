@@ -1,4 +1,5 @@
 using RestaurantMS.Desktop.Data;
+using RestaurantMS.Desktop.Services;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -20,21 +21,59 @@ public partial class AdminPage : Page
         if (((Button)s).Tag is not string tag) return;
         _activeTab = tag;
         HideAll();
+
         switch (tag)
         {
-            case "Users":    PanelUsers.Visibility    = Visibility.Visible; await LoadUsersAsync(); break;
-            case "Tables":   PanelTables.Visibility   = Visibility.Visible; await LoadTablesAsync(); break;
-            case "Settings": PanelSettings.Visibility = Visibility.Visible; await LoadSettingsAsync(); break;
-            case "Logs":     PanelLogs.Visibility     = Visibility.Visible; await LoadLogsAsync(); break;
+            case "Users":
+                PanelUsers.Visibility = Visibility.Visible;
+                await LoadUsersAsync();
+                break;
+            case "Tables":
+                PanelTables.Visibility = Visibility.Visible;
+                await LoadTablesAsync();
+                break;
+            case "Settings":
+                PanelSettings.Visibility = Visibility.Visible;
+                await LoadSettingsAsync();
+                break;
+            case "Branch":
+                PanelBranch.Visibility = Visibility.Visible;
+                break;
+            case "Currencies":
+                PanelCurrencies.Visibility = Visibility.Visible;
+                await LoadCurrenciesAsync();
+                break;
+            case "Devices":
+                PanelDevices.Visibility = Visibility.Visible;
+                await LoadDevicesAsync();
+                break;
+            case "Permissions":
+                OpenPermissionsWindow();
+                break;
+            case "Printers":
+                OpenPrinterSettings();
+                break;
+            case "Sessions":
+                PanelSessions.Visibility = Visibility.Visible;
+                await LoadSessionsAsync();
+                break;
+            case "Logs":
+                PanelLogs.Visibility = Visibility.Visible;
+                await LoadLogsAsync();
+                break;
         }
     }
 
     private void HideAll()
     {
-        PanelUsers.Visibility    = Visibility.Collapsed;
-        PanelTables.Visibility   = Visibility.Collapsed;
-        PanelSettings.Visibility = Visibility.Collapsed;
-        PanelLogs.Visibility     = Visibility.Collapsed;
+        PanelUsers.Visibility      = Visibility.Collapsed;
+        PanelTables.Visibility     = Visibility.Collapsed;
+        PanelSettings.Visibility   = Visibility.Collapsed;
+        PanelBranch.Visibility     = Visibility.Collapsed;
+        PanelCurrencies.Visibility = Visibility.Collapsed;
+        PanelDevices.Visibility    = Visibility.Collapsed;
+        PanelSessions.Visibility   = Visibility.Collapsed;
+        PanelLogs.Visibility       = Visibility.Collapsed;
     }
 
     // ===== المستخدمون =====
@@ -136,7 +175,7 @@ public partial class AdminPage : Page
             {
                 Text = $"{setting.key} — {setting.description ?? ""}",
                 Foreground = new System.Windows.Media.SolidColorBrush(
-                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#94a3b8")),
+                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#64748b")),
                 FontSize = 12, Margin = new Thickness(0, 0, 0, 4)
             });
 
@@ -166,20 +205,243 @@ public partial class AdminPage : Page
             };
             row.Children.Add(saveBtn);
 
-            var sep = new Separator
+            SettingsPanel.Children.Add(row);
+            SettingsPanel.Children.Add(new Separator
             {
                 Background = new System.Windows.Media.SolidColorBrush(
-                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#334155")),
+                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#E2E8F0")),
                 Margin = new Thickness(0, 16, 0, 0)
-            };
-            SettingsPanel.Children.Add(row);
-            SettingsPanel.Children.Add(sep);
+            });
         }
     }
 
-    private async void BtnSaveSettings_Click(object s, RoutedEventArgs e)
+    // ===== بيانات الفرع =====
+    private void BtnOpenBranchSettings_Click(object s, RoutedEventArgs e)
     {
-        MessageBox.Show("✅ تم حفظ الإعدادات");
+        try
+        {
+            var win = new BranchSettingsWindow();
+            win.Owner = Window.GetWindow(this);
+            win.ShowDialog();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"خطأ:\n{ex.Message}");
+        }
+    }
+
+    // ===== إدارة العملات =====
+    private async Task LoadCurrenciesAsync()
+    {
+        try
+        {
+            var tableExists = await _db.ExecuteScalarAsync<int>(
+                "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME='currencies'");
+            if (tableExists == 0)
+            {
+                MessageBox.Show("جدول العملات غير موجود.\nيرجى تشغيل Database/update_v3.sql أولاً.",
+                    "تنبيه", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var rows = await _db.QueryAsync<dynamic>(
+                @"SELECT currency_id, currency_name, currency_code, currency_symbol,
+                         is_local, exchange_rate, is_active
+                  FROM currencies ORDER BY is_local DESC, currency_name");
+
+            GridCurrencies.ItemsSource = rows.Select(r => new
+            {
+                currency_id     = (int)r.currency_id,
+                currency_name   = (string)r.currency_name,
+                currency_code   = (string)r.currency_code,
+                currency_symbol = (string)(r.currency_symbol ?? ""),
+                rate_fmt        = ((bool)r.is_local) ? "—  (أساسية)" : $"{(decimal)r.exchange_rate:N4}",
+                type_txt        = ((bool)r.is_local) ? "🏠 محلية" : "🌐 أجنبية",
+                status_txt      = ((bool)r.is_active) ? "✅ نشطة" : "⛔ موقوفة",
+                r.is_local, r.is_active, r.exchange_rate
+            }).ToList();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"خطأ في تحميل العملات:\n{ex.Message}");
+        }
+    }
+
+    private async void BtnAddCurrency_Click(object s, RoutedEventArgs e)
+    {
+        var dlg = new CurrencyDialog(_db, null);
+        dlg.Owner = Window.GetWindow(this);
+        dlg.ShowDialog();
+        if (dlg.Saved) await LoadCurrenciesAsync();
+    }
+
+    private async void BtnEditCurrency_Click(object s, RoutedEventArgs e)
+    {
+        if (((Button)s).Tag is not { } item) return;
+        var dlg = new CurrencyDialog(_db, item);
+        dlg.Owner = Window.GetWindow(this);
+        dlg.ShowDialog();
+        if (dlg.Saved) await LoadCurrenciesAsync();
+    }
+
+    private async void BtnDeleteCurrency_Click(object s, RoutedEventArgs e)
+    {
+        if (((Button)s).Tag is not int id) return;
+        if (MessageBox.Show("حذف هذه العملة؟", "تأكيد",
+                MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
+        await _db.ExecuteAsync(
+            "UPDATE currencies SET is_active=0 WHERE currency_id=@id", new { id });
+        await LoadCurrenciesAsync();
+    }
+
+    private async void BtnRefreshCurrencies_Click(object s, RoutedEventArgs e) => await LoadCurrenciesAsync();
+
+    // ===== الأجهزة المسجلة =====
+    private async Task LoadDevicesAsync()
+    {
+        TxtCurrentDevice.Text = DeviceLicenseService.GetCurrentFingerprint();
+        try
+        {
+            var tableExists = await _db.ExecuteScalarAsync<int>(
+                "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME='registered_devices'");
+            if (tableExists == 0)
+            {
+                GridDevices.ItemsSource = null;
+                MessageBox.Show("جدول الأجهزة غير موجود بعد.\nيرجى تشغيل Database/update_v2.sql أولاً.",
+                    "تنبيه", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            var rows = await _db.QueryAsync<dynamic>(
+                @"SELECT device_id, device_fp, device_name, ip_address,
+                         CONVERT(NVARCHAR(16), first_seen, 120) AS first_seen,
+                         CONVERT(NVARCHAR(16), last_seen,  120) AS last_seen,
+                         is_active
+                  FROM registered_devices ORDER BY last_seen DESC");
+
+            GridDevices.ItemsSource = rows.Select(r => new
+            {
+                device_id   = (int)r.device_id,
+                device_name = (string)(r.device_name ?? Environment.MachineName),
+                device_fp   = (string)r.device_fp,
+                ip_address  = (string)(r.ip_address ?? "—"),
+                first_seen  = (string)r.first_seen,
+                last_seen   = (string)r.last_seen,
+                status_txt  = ((bool)r.is_active) ? "✅ نشط" : "⛔ موقوف",
+                r.is_active
+            }).ToList();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"خطأ في تحميل الأجهزة:\n{ex.Message}");
+        }
+    }
+
+    private async void BtnRefreshDevices_Click(object s, RoutedEventArgs e) => await LoadDevicesAsync();
+
+    private async void BtnToggleDevice_Click(object s, RoutedEventArgs e)
+    {
+        if (GridDevices.SelectedItem == null)
+        {
+            MessageBox.Show("يرجى تحديد جهاز أولاً.", "تنبيه", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+        dynamic item = GridDevices.SelectedItem;
+        int deviceId = (int)item.device_id;
+        bool isActive = (bool)item.is_active;
+        string fp = (string)item.device_fp;
+        if (fp == DeviceLicenseService.GetCurrentFingerprint())
+        {
+            MessageBox.Show("لا يمكن إيقاف الجهاز الحالي.", "تنبيه",
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+        var action = isActive ? "إيقاف" : "تفعيل";
+        if (MessageBox.Show($"هل تريد {action} هذا الجهاز؟", "تأكيد",
+                MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
+        await _db.ExecuteAsync(
+            "UPDATE registered_devices SET is_active=CASE WHEN is_active=1 THEN 0 ELSE 1 END WHERE device_id=@id",
+            new { id = deviceId });
+        await LoadDevicesAsync();
+    }
+
+    // ===== جلسات الدخول =====
+    private async Task LoadSessionsAsync()
+    {
+        try
+        {
+            var tableExists = await _db.ExecuteScalarAsync<int>(
+                "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME='sessions_log'");
+            if (tableExists == 0)
+            {
+                MessageBox.Show("جدول الجلسات غير موجود.\nيرجى تشغيل Database/update_v3.sql أولاً.",
+                    "تنبيه", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var rows = await _db.QueryAsync<dynamic>(
+                @"SELECT TOP 300 s.session_id, s.username, s.device_name, s.ip_address,
+                         s.login_time, s.logout_time, s.session_status
+                  FROM sessions_log s
+                  ORDER BY s.login_time DESC");
+
+            int activeCount = 0;
+            var list = rows.Select(r =>
+            {
+                bool isActive = (string)(r.session_status ?? "نشط") == "نشط" && r.logout_time == null;
+                if (isActive) activeCount++;
+                return new
+                {
+                    session_id  = (int)r.session_id,
+                    username    = (string)(r.username ?? ""),
+                    device_name = (string)(r.device_name ?? "—"),
+                    ip_address  = (string)(r.ip_address  ?? "—"),
+                    login_time  = r.login_time != null
+                        ? ((DateTime)r.login_time).ToString("dd/MM/yyyy HH:mm:ss") : "—",
+                    logout_time = r.logout_time != null
+                        ? ((DateTime)r.logout_time).ToString("dd/MM/yyyy HH:mm:ss") : "—",
+                    status      = isActive ? "🟢 نشط" : "⚫ منتهي"
+                };
+            }).ToList();
+
+            GridSessions.ItemsSource = list;
+            TxtActiveSessionsCount.Text = $"الجلسات النشطة: {activeCount}";
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"خطأ في تحميل الجلسات:\n{ex.Message}");
+        }
+    }
+
+    private async void BtnRefreshSessions_Click(object s, RoutedEventArgs e) => await LoadSessionsAsync();
+
+    // ===== نافذة الصلاحيات =====
+    private void OpenPermissionsWindow()
+    {
+        try
+        {
+            var win = new RolePermissionsWindow();
+            win.Owner = Window.GetWindow(this);
+            win.ShowDialog();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"خطأ:\n{ex.Message}");
+        }
+    }
+
+    // ===== نافذة إعدادات الطابعات =====
+    private void OpenPrinterSettings()
+    {
+        try
+        {
+            var win = new PrinterSettingsWindow();
+            win.Owner = Window.GetWindow(this);
+            win.ShowDialog();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"خطأ:\n{ex.Message}");
+        }
     }
 
     private async void BtnRefreshLogs_Click(object s, RoutedEventArgs e) => await LoadLogsAsync();
