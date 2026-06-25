@@ -2500,11 +2500,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\DZ\\Desktop\\system-resturant\\RestaurantMS.Desktop.csproj",
+      "projectUniqueName": "C:\\Users\\DZ\\Downloads\\system-resturantzip\\RestaurantMS.Desktop.csproj",
       "projectName": "RestaurantMS.Desktop",
-      "projectPath": "C:\\Users\\DZ\\Desktop\\system-resturant\\RestaurantMS.Desktop.csproj",
+      "projectPath": "C:\\Users\\DZ\\Downloads\\system-resturantzip\\RestaurantMS.Desktop.csproj",
       "packagesPath": "C:\\Users\\DZ\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\DZ\\Desktop\\system-resturant\\obj\\",
+      "outputPath": "C:\\Users\\DZ\\Downloads\\system-resturantzip\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\DZ\\AppData\\Roaming\\NuGet\\NuGet.Config",
